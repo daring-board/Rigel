@@ -1,0 +1,12 @@
+# images
+*.jpg
+*.jpeg
+*.png
+
+# models
+*.h5
+*.json
+
+# python
+*.pyc
+*/__pychache__/*
