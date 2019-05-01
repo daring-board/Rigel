@@ -12,6 +12,7 @@ from keras.layers.core import Dense, Dropout, Activation
 from keras.applications.mobilenetv2 import MobileNetV2
 from keras.applications.vgg16 import VGG16
 from keras import optimizers
+from keras import regularizers
 
 from keras.preprocessing.image import ImageDataGenerator
 
@@ -93,7 +94,7 @@ if __name__=="__main__":
     転移学習用のレイヤーを追加
     '''
     added_layer = Flatten()(base_model.output)
-    added_layer = Dense(1024)(added_layer)
+    added_layer = Dense(1024, kernel_regularizer=regularizers.l2(0.001))(added_layer)
     added_layer = BatchNormalization()(added_layer)
     added_layer = Activation('relu')(added_layer)
     added_layer = Dense(len(label_dict), activation='softmax', name='classification')(added_layer)
@@ -110,6 +111,11 @@ if __name__=="__main__":
     for layer in base_model.layers:
          layer.trainable = False
     model.summary()
+
+    callbacks = [
+        ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr=1e-6)
+    ]
+
 
     '''
     全体のモデルをコンパイル
