@@ -11,8 +11,11 @@ from keras.layers import GlobalAveragePooling2D, BatchNormalization
 from keras.layers.core import Dense, Dropout, Activation
 from keras.applications.mobilenetv2 import MobileNetV2
 from keras.applications.vgg16 import VGG16
+from keras.applications.vgg19 import VGG19
+from keras.applications.inception_resnet_v2 import InceptionResNetV2
 from keras import optimizers
 from keras import regularizers
+from keras.callbacks import ReduceLROnPlateau
 
 from keras.preprocessing.image import ImageDataGenerator
 
@@ -74,6 +77,7 @@ if __name__=="__main__":
     学習済みモデルのロード(base_model)
     '''
     # base_model = VGG16(weights='imagenet', include_top=False, input_tensor=input_tensor)
+    # base_model = VGG19(weights='imagenet', include_top=False, input_tensor=input_tensor)
     base_model = MobileNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
 
 
@@ -93,8 +97,8 @@ if __name__=="__main__":
     '''
     転移学習用のレイヤーを追加
     '''
-    added_layer = Flatten()(base_model.output)
-    added_layer = Dense(1024, kernel_regularizer=regularizers.l2(0.001))(added_layer)
+    added_layer = GlobalAveragePooling2D()(base_model.output)
+    added_layer = Dense(256)(added_layer)
     added_layer = BatchNormalization()(added_layer)
     added_layer = Activation('relu')(added_layer)
     added_layer = Dense(len(label_dict), activation='softmax', name='classification')(added_layer)
@@ -113,15 +117,14 @@ if __name__=="__main__":
     model.summary()
 
     callbacks = [
-        ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr=1e-6)
+        ReduceLROnPlateau(monitor='loss', factor=0.1, patience=10, min_lr=1e-6)
     ]
-
 
     '''
     全体のモデルをコンパイル
     '''
-    # opt = optimizers.Adam(lr=1e-4)
-    opt = optimizers.SGD(lr=1e-4)
+    opt = optimizers.Adam(lr=1e-4)
+    # opt = optimizers.SGD(lr=1e-4)
     model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
     '''
@@ -129,8 +132,9 @@ if __name__=="__main__":
     '''
     model.fit_generator(
          train_gen,
-         epochs=50,
+         epochs=30,
          steps_per_epoch=int(train_gen.length),
+         callbacks=callbacks,
         #  validation_data=train_gen,
         #  validation_steps=4*int(train_gen.length / 10),
     )
