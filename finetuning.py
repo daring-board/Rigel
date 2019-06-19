@@ -13,6 +13,7 @@ from keras.applications.mobilenetv2 import MobileNetV2
 from keras.applications.vgg16 import VGG16
 from keras.applications.vgg19 import VGG19
 from keras.applications.inception_resnet_v2 import InceptionResNetV2
+from keras.applications.resnet50 import ResNet50
 from keras import optimizers
 from keras import regularizers
 from keras.callbacks import ReduceLROnPlateau
@@ -78,7 +79,8 @@ if __name__=="__main__":
     '''
     # base_model = VGG16(weights='imagenet', include_top=False, input_tensor=input_tensor)
     # base_model = VGG19(weights='imagenet', include_top=False, input_tensor=input_tensor)
-    base_model = MobileNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
+    # base_model = MobileNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
+    base_model = ResNet50(weights='imagenet', include_top=False, input_tensor=input_tensor)
 
 
     '''
@@ -142,7 +144,7 @@ if __name__=="__main__":
     '''
     モデルパラメタの保存
     '''
-    model.save('./model/custum_mobilenet.h5')
+    model.save('./model/custum_resnet50.h5')
 
     '''
     ラベル情報を保存
