@@ -4,21 +4,25 @@ import cv2
 import numpy as np
 import pandas as pd
 
-from keras.utils import np_utils, Sequence
-from keras.models import Sequential, Model
-from keras.layers import Input, Flatten
-from keras.layers import GlobalAveragePooling2D, BatchNormalization
-from keras.layers.core import Dense, Dropout, Activation
-from keras.applications.mobilenetv2 import MobileNetV2
-from keras.applications.vgg16 import VGG16
-from keras.applications.vgg19 import VGG19
-from keras.applications.inception_resnet_v2 import InceptionResNetV2
-from keras.applications.resnet50 import ResNet50
-from keras import optimizers
-from keras import regularizers
-from keras.callbacks import ReduceLROnPlateau
+import tensorflow as tf
+from keras import backend as K
 
-from keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.utils import Sequence
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.layers import Input, Flatten
+from tensorflow.keras.layers import GlobalAveragePooling2D, BatchNormalization
+from tensorflow.keras.layers import Dense, Dropout, Activation
+from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras.applications import MobileNet
+from tensorflow.keras.applications import VGG16
+from tensorflow.keras.applications import VGG19
+from tensorflow.keras.applications import InceptionResNetV2
+from tensorflow.keras.applications import ResNet50
+from tensorflow.keras import optimizers, utils
+from tensorflow.keras import regularizers
+from tensorflow.keras.callbacks import ReduceLROnPlateau
+
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 class DataSequence(Sequence):
     def __init__(self, data_path, label):
@@ -60,7 +64,7 @@ class DataSequence(Sequence):
 
         datas = np.asarray(datas)
         labels = pd.DataFrame(labels)
-        labels = np_utils.to_categorical(labels, len(label_dict))
+        labels = utils.to_categorical(labels, len(label_dict))
         return datas, labels
 
     def __len__(self):
@@ -70,19 +74,90 @@ class DataSequence(Sequence):
         ''' 何もしない'''
         pass
 
+def categorical_focal_loss(gamma=2., alpha=.25):
+    """
+    Softmax version of focal loss.
+           m
+      FL = ∑  -alpha * (1 - p_o,c)^gamma * y_o,c * log(p_o,c)
+          c=1
+      where m = number of classes, c = class and o = observation
+    Parameters:
+      alpha -- the same as weighing factor in balanced cross entropy
+      gamma -- focusing parameter for modulating factor (1-p)
+    Default value:
+      gamma -- 2.0 as mentioned in the paper
+      alpha -- 0.25 as mentioned in the paper
+    References:
+        Official paper: https://arxiv.org/pdf/1708.02002.pdf
+        https://www.tensorflow.org/api_docs/python/tf/keras/backend/categorical_crossentropy
+    Usage:
+     model.compile(loss=[categorical_focal_loss(alpha=.25, gamma=2)], metrics=["accuracy"], optimizer=adam)
+    """
+    def categorical_focal_loss_fixed(y_true, y_pred):
+        """
+        :param y_true: A tensor of the same shape as `y_pred`
+        :param y_pred: A tensor resulting from a softmax
+        :return: Output tensor.
+        """
+
+        # Scale predictions so that the class probas of each sample sum to 1
+        y_pred /= K.sum(y_pred, axis=-1, keepdims=True)
+
+        # Clip the prediction value to prevent NaN's and Inf's
+        epsilon = K.epsilon()
+        y_pred = K.clip(y_pred, epsilon, 1. - epsilon)
+
+        # Calculate Cross Entropy
+        cross_entropy = -y_true * K.log(y_pred)
+
+        # Calculate Focal Loss
+        loss = alpha * K.pow(1 - y_pred, gamma) * cross_entropy
+
+        # Sum the losses in mini_batch
+        return K.sum(loss, axis=1)
+
+    return categorical_focal_loss_fixed
+
+class CustumModel():
+    def __init__(self):
+        shape = (224, 224, 3)
+        input_tensor = Input(shape=shape)
+
+        '''
+        学習済みモデルのロード(base_model)
+        '''
+        # self.base_model = VGG16(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        # self.base_model = VGG19(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        self.base_model = MobileNet(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        # self.base_model = ResNet50(weights='imagenet', include_top=False, input_tensor=input_tensor)
+
+    def createModel(self, label_dict):
+        '''
+        転移学習用のレイヤーを追加
+        '''
+        added_layer = GlobalAveragePooling2D()(self.base_model.output)
+        added_layer = Dense(256)(added_layer)
+        added_layer = BatchNormalization()(added_layer)
+        added_layer = Activation('relu')(added_layer)
+        added_layer = Dense(len(label_dict), activation='softmax', name='classification')(added_layer)
+
+        '''
+        base_modelと転移学習用レイヤーを結合
+        '''
+        model = Model(inputs=self.base_model.input, outputs=added_layer)
+
+        '''
+        base_modelのモデルパラメタは学習させない。
+        (added_layerのモデルパラメタだけを学習させる)
+        '''
+        for layer in self.base_model.layers:
+            layer.trainable = False
+        model.summary()
+
+        return model
+
+
 if __name__=="__main__":
-    shape = (224, 224, 3)
-    input_tensor = Input(shape=shape)
-
-    '''
-    学習済みモデルのロード(base_model)
-    '''
-    # base_model = VGG16(weights='imagenet', include_top=False, input_tensor=input_tensor)
-    # base_model = VGG19(weights='imagenet', include_top=False, input_tensor=input_tensor)
-    # base_model = MobileNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
-    base_model = ResNet50(weights='imagenet', include_top=False, input_tensor=input_tensor)
-
-
     '''
     学習用画像のロード
     '''
@@ -96,27 +171,8 @@ if __name__=="__main__":
         count += 1
     train_gen = DataSequence('./train', label_dict)
 
-    '''
-    転移学習用のレイヤーを追加
-    '''
-    added_layer = GlobalAveragePooling2D()(base_model.output)
-    added_layer = Dense(256)(added_layer)
-    added_layer = BatchNormalization()(added_layer)
-    added_layer = Activation('relu')(added_layer)
-    added_layer = Dense(len(label_dict), activation='softmax', name='classification')(added_layer)
-
-    '''
-    base_modelと転移学習用レイヤーを結合
-    '''
-    model = Model(inputs=base_model.input, outputs=added_layer)
-
-    '''
-    base_modelのモデルパラメタは学習させない。
-    (added_layerのモデルパラメタだけを学習させる)
-    '''
-    for layer in base_model.layers:
-         layer.trainable = False
-    model.summary()
+    cm = CustumModel()
+    model = cm.createModel(label_dict)
 
     callbacks = [
         ReduceLROnPlateau(monitor='loss', factor=0.1, patience=10, min_lr=1e-6)
@@ -127,24 +183,25 @@ if __name__=="__main__":
     '''
     opt = optimizers.Adam(lr=1e-4)
     # opt = optimizers.SGD(lr=1e-4)
-    model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=opt, loss=[categorical_focal_loss(alpha=.25, gamma=2)], metrics=['accuracy'])
+    # model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
     '''
     モデルの学習
     '''
     model.fit_generator(
          train_gen,
-         epochs=30,
+         epochs=10,
          steps_per_epoch=int(train_gen.length),
          callbacks=callbacks,
-        #  validation_data=train_gen,
-        #  validation_steps=4*int(train_gen.length / 10),
+         validation_data=train_gen,
+         validation_steps=int(train_gen.length / 10),
     )
 
     '''
     モデルパラメタの保存
     '''
-    model.save('./model/custum_resnet50.h5')
+    model.save('./model/custum_mobilenet.h5')
 
     '''
     ラベル情報を保存
