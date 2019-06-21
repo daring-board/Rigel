@@ -128,8 +128,8 @@ class CustumModel():
         '''
         # self.base_model = VGG16(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = VGG19(weights='imagenet', include_top=False, input_tensor=input_tensor)
-        self.base_model = MobileNet(weights='imagenet', include_top=False, input_tensor=input_tensor)
-        # self.base_model = ResNet50(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        # self.base_model = MobileNet(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        self.base_model = ResNet50(weights='imagenet', include_top=False, input_tensor=input_tensor)
 
     def createModel(self, label_dict):
         '''
@@ -150,7 +150,7 @@ class CustumModel():
         base_modelのモデルパラメタは学習させない。
         (added_layerのモデルパラメタだけを学習させる)
         '''
-        for layer in self.base_model.layers:
+        for layer in self.base_model.layers[:-4]:
             layer.trainable = False
         model.summary()
 
@@ -201,7 +201,7 @@ if __name__=="__main__":
     '''
     モデルパラメタの保存
     '''
-    model.save('./model/custum_mobilenet.h5')
+    model.save('./model/custum_resnet.h5')
 
     '''
     ラベル情報を保存

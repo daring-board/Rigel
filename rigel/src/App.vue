@@ -1,7 +1,9 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <Labeling/>
+    <b-navbar toggleable="lg" type="dark" variant="info">
+      <b-navbar-brand>Rigel</b-navbar-brand>
+    </b-navbar>
+    <Labeling id="main"/>
   </div>
 </template>
 
@@ -23,6 +25,8 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+}
+#main{
+  padding-top: 10px;
 }
 </style>
