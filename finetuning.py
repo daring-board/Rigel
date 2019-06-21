@@ -17,6 +17,7 @@ from tensorflow.keras.applications import MobileNet
 from tensorflow.keras.applications import VGG16
 from tensorflow.keras.applications import VGG19
 from tensorflow.keras.applications import InceptionResNetV2
+from tensorflow.keras.applications import Xception
 from tensorflow.keras.applications import ResNet50
 from tensorflow.keras import optimizers, utils
 from tensorflow.keras import regularizers
@@ -126,10 +127,7 @@ class CustumModel():
         '''
         学習済みモデルのロード(base_model)
         '''
-        # self.base_model = VGG16(weights='imagenet', include_top=False, input_tensor=input_tensor)
-        # self.base_model = VGG19(weights='imagenet', include_top=False, input_tensor=input_tensor)
-        self.base_model = MobileNet(weights='imagenet', include_top=False, input_tensor=input_tensor)
-        # self.base_model = ResNet50(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        self.base_model = Xception(weights='imagenet', include_top=False, input_tensor=input_tensor)
 
     def createModel(self, label_dict):
         '''
@@ -191,7 +189,7 @@ if __name__=="__main__":
     '''
     model.fit_generator(
          train_gen,
-         epochs=10,
+         epochs=15,
          steps_per_epoch=int(train_gen.length),
          callbacks=callbacks,
          validation_data=train_gen,
@@ -201,7 +199,7 @@ if __name__=="__main__":
     '''
     モデルパラメタの保存
     '''
-    model.save('./model/custum_mobilenet.h5')
+    model.save('./model/custum_xception.h5')
 
     '''
     ラベル情報を保存
