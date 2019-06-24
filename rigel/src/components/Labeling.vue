@@ -1,5 +1,6 @@
 <template>
   <div class="labeler">
+    <b-alert :show="model == null">モデルファイルをダウンロードしています。</b-alert>
     <b-container fluid>
       <b-row>
         <b-col>

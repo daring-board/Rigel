@@ -129,7 +129,8 @@ class CustumModel():
         # self.base_model = VGG16(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = VGG19(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = MobileNet(weights='imagenet', include_top=False, input_tensor=input_tensor)
-        self.base_model = ResNet50(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        # self.base_model = ResNet50(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        self.base_model = InceptionResNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
 
     def createModel(self, label_dict):
         '''
@@ -191,7 +192,7 @@ if __name__=="__main__":
     '''
     model.fit_generator(
          train_gen,
-         epochs=10,
+         epochs=12,
          steps_per_epoch=int(train_gen.length),
          callbacks=callbacks,
          validation_data=train_gen,
