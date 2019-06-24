@@ -18,7 +18,7 @@
         </b-col>
         <b-col>
           <b-card header="Step3 判定する">
-            <div v-if="processing">
+            <div v-if="!estimate">
               <b-spinner label="Spinning"></b-spinner>
             </div>
             <div v-else>
@@ -31,8 +31,8 @@
                   {{ (data.item.score * 100).toFixed(2) }} %
                 </template>
               </b-table>
-              <button @click="labeling">Labeling!!</button>
             </div>
+            <button @click="labeling">Labeling!!</button>
           </b-card>
         </b-col>
       </b-row>
@@ -71,7 +71,7 @@ export default {
       })
     },
     async labeling(){
-      this.processing = true
+      this.estimate = null
       /* eslint-disable */
       console.log(this.model)
       const img =  tf.browser.fromPixels(document.getElementById('image')).expandDims().div(tf.scalar(255))
@@ -88,8 +88,7 @@ export default {
         return 0
       })
 
-      this.estimate = score_list.slice(0, 3)
-      this.processing = false
+      this.estimate = score_list.slice(0, 5)
     },
     onFileChange(event) {
       const files = event.target.files || event.dataTransfer.files

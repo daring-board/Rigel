@@ -17,6 +17,7 @@ from tensorflow.keras.applications import MobileNet
 from tensorflow.keras.applications import VGG16
 from tensorflow.keras.applications import VGG19
 from tensorflow.keras.applications import InceptionResNetV2
+from tensorflow.keras.applications import Xception
 from tensorflow.keras.applications import ResNet50
 from tensorflow.keras import optimizers, utils
 from tensorflow.keras import regularizers
@@ -25,14 +26,15 @@ from tensorflow.keras.callbacks import ReduceLROnPlateau
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 class DataSequence(Sequence):
-    def __init__(self, data_path, label):
-        self.batch = 4
+    def __init__(self, data_path, label, batch_size):
+        self.batch = batch_size
         self.data_file_path = data_path
         self.datagen = ImageDataGenerator(
                             rotation_range=30,
                             width_shift_range=0.2,
                             height_shift_range=0.2,
-                            zoom_range=0.5
+                            zoom_range=0.2,
+                            horizontal_flip=True,
                         )
         d_list = os.listdir(self.data_file_path)
         self.f_list = []
@@ -126,17 +128,18 @@ class CustumModel():
         '''
         学習済みモデルのロード(base_model)
         '''
-        # self.base_model = VGG16(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        self.base_model = VGG16(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = VGG19(weights='imagenet', include_top=False, input_tensor=input_tensor)
-        # self.base_model = MobileNet(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        # self.base_model = MobileNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = ResNet50(weights='imagenet', include_top=False, input_tensor=input_tensor)
-        self.base_model = InceptionResNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        # self.base_model = InceptionResNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        # self.base_model = Xception(weights='imagenet', include_top=False, input_tensor=input_tensor)
 
     def createModel(self, label_dict):
         '''
         転移学習用のレイヤーを追加
         '''
-        added_layer = GlobalAveragePooling2D()(self.base_model.output)
+        added_layer = Flatten()(self.base_model.output)
         added_layer = Dense(256)(added_layer)
         added_layer = BatchNormalization()(added_layer)
         added_layer = Activation('relu')(added_layer)
@@ -151,7 +154,7 @@ class CustumModel():
         base_modelのモデルパラメタは学習させない。
         (added_layerのモデルパラメタだけを学習させる)
         '''
-        for layer in self.base_model.layers[:-4]:
+        for layer in self.base_model.layers:
             layer.trainable = False
         model.summary()
 
@@ -164,13 +167,14 @@ if __name__=="__main__":
     '''
     label_dict = {}
     count = 0
+    batch_size = 10
     for d_name in os.listdir('./train'):
         if d_name == 'empty': continue
         if d_name == '.DS_Store': continue
         d_name = d_name.split('_')[-1]
         label_dict[d_name] = count
         count += 1
-    train_gen = DataSequence('./train', label_dict)
+    train_gen = DataSequence('./train', label_dict, batch_size)
 
     cm = CustumModel()
     model = cm.createModel(label_dict)
@@ -182,27 +186,28 @@ if __name__=="__main__":
     '''
     全体のモデルをコンパイル
     '''
-    opt = optimizers.Adam(lr=1e-4)
-    # opt = optimizers.SGD(lr=1e-4)
-    model.compile(optimizer=opt, loss=[categorical_focal_loss(alpha=.25, gamma=2)], metrics=['accuracy'])
-    # model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+    # opt = optimizers.Adam(lr=1e-4)
+    opt = optimizers.RMSprop(lr=1e-4)
+    # opt = optimizers.SGD(lr=1e-3)
+    # model.compile(optimizer=opt, loss=[categorical_focal_loss(alpha=.25, gamma=2)], metrics=['accuracy'])
+    model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
     '''
     モデルの学習
     '''
     model.fit_generator(
          train_gen,
-         epochs=12,
-         steps_per_epoch=int(train_gen.length),
+         epochs=20,
+         steps_per_epoch=int(train_gen.length / batch_size),
          callbacks=callbacks,
          validation_data=train_gen,
-         validation_steps=int(train_gen.length / 10),
+         validation_steps=int(train_gen.length / 20),
     )
 
     '''
     モデルパラメタの保存
     '''
-    model.save('./model/custum_resnet.h5')
+    model.save('./model/custum_model.h5')
 
     '''
     ラベル情報を保存
