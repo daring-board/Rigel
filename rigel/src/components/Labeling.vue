@@ -18,21 +18,29 @@
         </b-col>
         <b-col>
           <b-card header="Step3 判定する">
-            <div v-if="!estimate">
-              <b-spinner label="Spinning"></b-spinner>
+            <div v-if="model">
+              <div v-if="isSpining">
+                <b-spinner label="Spinning"></b-spinner>
+              </div>
+              <div v-else-if="estimate">
+                <b-table dark :fields="fields" :items="estimate">
+                  <template slot="No" slot-scope="data">
+                    {{ data.index + 1 }}
+                  </template>
+                  <template slot="score" slot-scope="data">
+                    {{ (data.item.score * 100).toFixed(2) }} %
+                  </template>
+                </b-table>                
+              </div>
             </div>
-            <div v-else>
-              <b-table dark :fields="fields" :items="estimate">
-                <template slot="No" slot-scope="data">
-                  {{ data.index + 1 }}
-                </template>
-
-                <template slot="score" slot-scope="data">
-                  {{ (data.item.score * 100).toFixed(2) }} %
-                </template>
-              </b-table>
-            </div>
-            <button @click="labeling">Labeling!!</button>
+            <button v-if="model != null" @click="labeling">Labeling!!</button>
+          </b-card>
+        </b-col>
+        <b-col>
+          <b-card header="判定できるキャラ">
+            <b-table :fields="l_flds" :items="label_list">
+              <template slot="key" slot-scope="data">{{data.index + 1}}</template>
+            </b-table>
           </b-card>
         </b-col>
       </b-row>
@@ -52,13 +60,22 @@ export default {
       scores: null,
       labels: Labels,
       estimate: null,
-      img: 'logo.png',
-      processing: false,
+      isSpining: false,
+      img: 'kami.jpg',
       fields: [
         'No',
         {'key': 'label', 'label': 'ラベル'},
         {'key':'score', 'label': '確信度'}
+      ],
+      l_flds: [
+        {'key': 'key', 'label': 'No'},
+        {'key': 'value', 'label': 'ラベル'},
       ]
+    }
+  },
+  computed: {
+    label_list(){
+      return Object.entries(this.labels).map(([key, value]) => ({key, value}))
     }
   },
   mounted: function(){
@@ -68,12 +85,16 @@ export default {
     loadModel(){
       tf.loadLayersModel('model/model.json').then(response => {
         this.model = response
+        const img =  tf.browser.fromPixels(document.getElementById('image')).expandDims().div(tf.scalar(255))
+        this.scores = this.model.predict(img).data()
       })
     },
     async labeling(){
       this.estimate = null
+      this.isSpining = true
       /* eslint-disable */
       console.log(this.model)
+
       const img =  tf.browser.fromPixels(document.getElementById('image')).expandDims().div(tf.scalar(255))
       this.scores = await this.model.predict(img).data()
 
@@ -89,6 +110,7 @@ export default {
       })
 
       this.estimate = score_list.slice(0, 5)
+      this.isSpining = false
     },
     onFileChange(event) {
       const files = event.target.files || event.dataTransfer.files

@@ -35,6 +35,8 @@ class DataSequence(Sequence):
                             height_shift_range=0.2,
                             zoom_range=0.2,
                             horizontal_flip=True,
+                            # channel_shift_range=3.,
+                            brightness_range=[0.8, 1]
                         )
         d_list = os.listdir(self.data_file_path)
         self.f_list = []
@@ -128,9 +130,9 @@ class CustumModel():
         '''
         学習済みモデルのロード(base_model)
         '''
-        self.base_model = VGG16(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        # self.base_model = VGG16(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = VGG19(weights='imagenet', include_top=False, input_tensor=input_tensor)
-        # self.base_model = MobileNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        self.base_model = MobileNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = ResNet50(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = InceptionResNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = Xception(weights='imagenet', include_top=False, input_tensor=input_tensor)
@@ -139,8 +141,9 @@ class CustumModel():
         '''
         転移学習用のレイヤーを追加
         '''
-        added_layer = Flatten()(self.base_model.output)
-        added_layer = Dense(256)(added_layer)
+        # added_layer = Flatten()(self.base_model.output)
+        added_layer = GlobalAveragePooling2D()(self.base_model.output)
+        added_layer = Dense(128)(added_layer)
         added_layer = BatchNormalization()(added_layer)
         added_layer = Activation('relu')(added_layer)
         added_layer = Dense(len(label_dict), activation='softmax', name='classification')(added_layer)
@@ -154,7 +157,7 @@ class CustumModel():
         base_modelのモデルパラメタは学習させない。
         (added_layerのモデルパラメタだけを学習させる)
         '''
-        for layer in self.base_model.layers:
+        for layer in self.base_model.layers[:-3]:
             layer.trainable = False
         model.summary()
 
@@ -167,7 +170,7 @@ if __name__=="__main__":
     '''
     label_dict = {}
     count = 0
-    batch_size = 10
+    batch_size = 5
     for d_name in os.listdir('./train'):
         if d_name == 'empty': continue
         if d_name == '.DS_Store': continue
@@ -180,14 +183,14 @@ if __name__=="__main__":
     model = cm.createModel(label_dict)
 
     callbacks = [
-        ReduceLROnPlateau(monitor='loss', factor=0.1, patience=10, min_lr=1e-6)
+        ReduceLROnPlateau(monitor='loss', factor=0.1, patience=3, min_lr=1e-6)
     ]
 
     '''
     全体のモデルをコンパイル
     '''
-    # opt = optimizers.Adam(lr=1e-4)
-    opt = optimizers.RMSprop(lr=1e-4)
+    opt = optimizers.Adam(lr=1e-4)
+    # opt = optimizers.RMSprop(lr=1e-4)
     # opt = optimizers.SGD(lr=1e-3)
     # model.compile(optimizer=opt, loss=[categorical_focal_loss(alpha=.25, gamma=2)], metrics=['accuracy'])
     model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
@@ -197,11 +200,11 @@ if __name__=="__main__":
     '''
     model.fit_generator(
          train_gen,
-         epochs=20,
+         epochs=75,
          steps_per_epoch=int(train_gen.length / batch_size),
          callbacks=callbacks,
          validation_data=train_gen,
-         validation_steps=int(train_gen.length / 20),
+         validation_steps=int(train_gen.length / 40),
     )
 
     '''

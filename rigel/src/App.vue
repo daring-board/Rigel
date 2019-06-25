@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <b-navbar toggleable="lg" type="dark" variant="info">
-      <b-navbar-brand>Rigel</b-navbar-brand>
+      <b-navbar-brand>ストⅡ コスプレ判定機</b-navbar-brand>
     </b-navbar>
     <Labeling id="main"/>
   </div>
