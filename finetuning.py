@@ -36,7 +36,7 @@ class DataSequence(Sequence):
                             zoom_range=0.2,
                             horizontal_flip=True,
                             # channel_shift_range=3.,
-                            brightness_range=[0.8, 1]
+                            brightness_range=[0.95, 1.05]
                         )
         d_list = os.listdir(self.data_file_path)
         self.f_list = []
@@ -143,7 +143,7 @@ class CustumModel():
         '''
         # added_layer = Flatten()(self.base_model.output)
         added_layer = GlobalAveragePooling2D()(self.base_model.output)
-        added_layer = Dense(128)(added_layer)
+        added_layer = Dense(1024)(added_layer)
         added_layer = BatchNormalization()(added_layer)
         added_layer = Activation('relu')(added_layer)
         added_layer = Dense(len(label_dict), activation='softmax', name='classification')(added_layer)
@@ -157,7 +157,7 @@ class CustumModel():
         base_modelのモデルパラメタは学習させない。
         (added_layerのモデルパラメタだけを学習させる)
         '''
-        for layer in self.base_model.layers[:-3]:
+        for layer in self.base_model.layers[:-4]:
             layer.trainable = False
         model.summary()
 
@@ -183,14 +183,14 @@ if __name__=="__main__":
     model = cm.createModel(label_dict)
 
     callbacks = [
-        ReduceLROnPlateau(monitor='loss', factor=0.1, patience=3, min_lr=1e-6)
+        ReduceLROnPlateau(monitor='loss', factor=0.1, patience=3, min_lr=1e-6, verbose=1)
     ]
 
     '''
     全体のモデルをコンパイル
     '''
-    opt = optimizers.Adam(lr=1e-4)
-    # opt = optimizers.RMSprop(lr=1e-4)
+    # opt = optimizers.Adam(lr=1e-4)
+    opt = optimizers.RMSprop(lr=1e-4)
     # opt = optimizers.SGD(lr=1e-3)
     # model.compile(optimizer=opt, loss=[categorical_focal_loss(alpha=.25, gamma=2)], metrics=['accuracy'])
     model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
@@ -200,7 +200,7 @@ if __name__=="__main__":
     '''
     model.fit_generator(
          train_gen,
-         epochs=75,
+         epochs=50,
          steps_per_epoch=int(train_gen.length / batch_size),
          callbacks=callbacks,
          validation_data=train_gen,
