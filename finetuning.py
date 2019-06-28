@@ -12,11 +12,9 @@ from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.layers import Input, Flatten
 from tensorflow.keras.layers import GlobalAveragePooling2D, BatchNormalization
 from tensorflow.keras.layers import Dense, Dropout, Activation
-from tensorflow.keras.applications import MobileNetV2
-from tensorflow.keras.applications import MobileNet
-from tensorflow.keras.applications import VGG16
-from tensorflow.keras.applications import VGG19
-from tensorflow.keras.applications import InceptionResNetV2
+from tensorflow.keras.applications import MobileNet, MobileNetV2
+from tensorflow.keras.applications import VGG16, VGG19
+from tensorflow.keras.applications import InceptionResNetV2, InceptionV3
 from tensorflow.keras.applications import Xception
 from tensorflow.keras.applications import ResNet50
 from tensorflow.keras import optimizers, utils
@@ -26,18 +24,19 @@ from tensorflow.keras.callbacks import ReduceLROnPlateau
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 class DataSequence(Sequence):
-    def __init__(self, data_path, label, batch_size):
+    def __init__(self, data_path, label, batch_size, is_valid=False):
         self.batch = batch_size
         self.data_file_path = data_path
         self.datagen = ImageDataGenerator(
-                            rotation_range=30,
+                            rotation_range=45,
                             width_shift_range=0.2,
                             height_shift_range=0.2,
-                            zoom_range=0.2,
+                            zoom_range=0.1,
                             horizontal_flip=True,
                             # channel_shift_range=3.,
-                            brightness_range=[0.95, 1.05]
+                            # brightness_range=[0.9, 1.1]
                         )
+        self.is_valid = is_valid
         d_list = os.listdir(self.data_file_path)
         self.f_list = []
         for dir in d_list:
@@ -49,7 +48,7 @@ class DataSequence(Sequence):
 
     def __getitem__(self, idx):
         warp = self.batch
-        aug_time = 3
+        aug_time = 3 if not self.is_valid else 0
         datas, labels = [], []
         label_dict = self.label
 
@@ -136,6 +135,7 @@ class CustumModel():
         # self.base_model = ResNet50(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = InceptionResNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = Xception(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        # self.base_model = InceptionV3(weights='imagenet', include_top=False, input_tensor=input_tensor)
 
     def createModel(self, label_dict):
         '''
@@ -157,7 +157,7 @@ class CustumModel():
         base_modelのモデルパラメタは学習させない。
         (added_layerのモデルパラメタだけを学習させる)
         '''
-        for layer in self.base_model.layers[:-4]:
+        for layer in self.base_model.layers:
             layer.trainable = False
         model.summary()
 
@@ -178,12 +178,13 @@ if __name__=="__main__":
         label_dict[d_name] = count
         count += 1
     train_gen = DataSequence('./train', label_dict, batch_size)
+    validate_gen = DataSequence('./train', label_dict, batch_size, True)
 
     cm = CustumModel()
     model = cm.createModel(label_dict)
 
     callbacks = [
-        ReduceLROnPlateau(monitor='loss', factor=0.1, patience=3, min_lr=1e-6, verbose=1)
+        ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr=1e-10, verbose=1)
     ]
 
     '''
@@ -203,8 +204,8 @@ if __name__=="__main__":
          epochs=50,
          steps_per_epoch=int(train_gen.length / batch_size),
          callbacks=callbacks,
-         validation_data=train_gen,
-         validation_steps=int(train_gen.length / 40),
+         validation_data=validate_gen,
+         validation_steps=int(validate_gen.length / 5),
     )
 
     '''
