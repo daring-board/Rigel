@@ -19,7 +19,7 @@ from tensorflow.keras.applications import Xception
 from tensorflow.keras.applications import ResNet50
 from tensorflow.keras import optimizers, utils
 from tensorflow.keras import regularizers
-from tensorflow.keras.callbacks import ReduceLROnPlateau
+from tensorflow.keras.callbacks import ReduceLROnPlateau, ModelCheckpoint
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
@@ -31,7 +31,7 @@ class DataSequence(Sequence):
                             rotation_range=45,
                             width_shift_range=0.2,
                             height_shift_range=0.2,
-                            zoom_range=0.1,
+                            zoom_range=0.2,
                             horizontal_flip=True,
                             # channel_shift_range=3.,
                             # brightness_range=[0.9, 1.1]
@@ -143,7 +143,10 @@ class CustumModel():
         '''
         # added_layer = Flatten()(self.base_model.output)
         added_layer = GlobalAveragePooling2D()(self.base_model.output)
-        added_layer = Dense(1024)(added_layer)
+        added_layer = Dense(1024, kernel_regularizer=regularizers.l2(0.01))(added_layer)
+        added_layer = BatchNormalization()(added_layer)
+        added_layer = Activation('relu')(added_layer)
+        added_layer = Dense(512, kernel_regularizer=regularizers.l2(0.01))(added_layer)
         added_layer = BatchNormalization()(added_layer)
         added_layer = Activation('relu')(added_layer)
         added_layer = Dense(len(label_dict), activation='softmax', name='classification')(added_layer)
@@ -184,7 +187,8 @@ if __name__=="__main__":
     model = cm.createModel(label_dict)
 
     callbacks = [
-        ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr=1e-10, verbose=1)
+        ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr=1e-10, verbose=1),
+        ModelCheckpoint('./checkpoint/weights.{epoch:02d}-{val_loss:.2f}.h5', verbose=1, mode='auto')
     ]
 
     '''
@@ -193,15 +197,15 @@ if __name__=="__main__":
     # opt = optimizers.Adam(lr=1e-4)
     opt = optimizers.RMSprop(lr=1e-4)
     # opt = optimizers.SGD(lr=1e-3)
-    # model.compile(optimizer=opt, loss=[categorical_focal_loss(alpha=.25, gamma=2)], metrics=['accuracy'])
-    model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=opt, loss=[categorical_focal_loss(alpha=.25, gamma=2)], metrics=['accuracy'])
+    # model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
     '''
     モデルの学習
     '''
     model.fit_generator(
          train_gen,
-         epochs=50,
+         epochs=80,
          steps_per_epoch=int(train_gen.length / batch_size),
          callbacks=callbacks,
          validation_data=validate_gen,
