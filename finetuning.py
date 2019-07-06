@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 import tensorflow as tf
-from keras import backend as K
+from tensorflow.keras import backend as K
 
 from tensorflow.keras.utils import Sequence
 from tensorflow.keras.models import Sequential, Model
@@ -28,13 +28,13 @@ class DataSequence(Sequence):
         self.batch = batch_size
         self.data_file_path = data_path
         self.datagen = ImageDataGenerator(
-                            rotation_range=45,
+                            rotation_range=30,
                             width_shift_range=0.2,
                             height_shift_range=0.2,
-                            zoom_range=0.2,
+                            zoom_range=0.3,
                             horizontal_flip=True,
                             # channel_shift_range=3.,
-                            # brightness_range=[0.9, 1.1]
+                            brightness_range=[0.8, 1.2]
                         )
         self.is_valid = is_valid
         d_list = os.listdir(self.data_file_path)
@@ -131,7 +131,8 @@ class CustumModel():
         '''
         # self.base_model = VGG16(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = VGG19(weights='imagenet', include_top=False, input_tensor=input_tensor)
-        self.base_model = MobileNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        self.base_model = MobileNet(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        # self.base_model = MobileNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = ResNet50(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = InceptionResNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = Xception(weights='imagenet', include_top=False, input_tensor=input_tensor)
@@ -160,8 +161,16 @@ class CustumModel():
         base_modelのモデルパラメタは学習させない。
         (added_layerのモデルパラメタだけを学習させる)
         '''
-        for layer in self.base_model.layers:
+        '''
+        MobileNet
+        '''
+        for layer in self.base_model.layers[:72]:
             layer.trainable = False
+        '''
+        InceptionV3
+        '''
+        # for layer in self.base_model.layers[:249]:
+        #     layer.trainable = False
         model.summary()
 
         return model
@@ -173,7 +182,7 @@ if __name__=="__main__":
     '''
     label_dict = {}
     count = 0
-    batch_size = 5
+    batch_size = 10
     for d_name in os.listdir('./train'):
         if d_name == 'empty': continue
         if d_name == '.DS_Store': continue
@@ -205,7 +214,7 @@ if __name__=="__main__":
     '''
     model.fit_generator(
          train_gen,
-         epochs=80,
+         epochs=150,
          steps_per_epoch=int(train_gen.length / batch_size),
          callbacks=callbacks,
          validation_data=validate_gen,
