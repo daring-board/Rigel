@@ -28,13 +28,13 @@ class DataSequence(Sequence):
         self.batch = batch_size
         self.data_file_path = data_path
         self.datagen = ImageDataGenerator(
-                            rotation_range=30,
+                            rotation_range=45,
                             width_shift_range=0.2,
                             height_shift_range=0.2,
-                            zoom_range=0.3,
+                            zoom_range=0.4,
                             horizontal_flip=True,
                             # channel_shift_range=3.,
-                            brightness_range=[0.8, 1.2]
+                            brightness_range=[0.7, 1.3]
                         )
         self.is_valid = is_valid
         d_list = os.listdir(self.data_file_path)
@@ -131,10 +131,10 @@ class CustumModel():
         '''
         # self.base_model = VGG16(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = VGG19(weights='imagenet', include_top=False, input_tensor=input_tensor)
-        self.base_model = MobileNet(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        # self.base_model = MobileNet(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = MobileNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = ResNet50(weights='imagenet', include_top=False, input_tensor=input_tensor)
-        # self.base_model = InceptionResNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        self.base_model = InceptionResNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = Xception(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = InceptionV3(weights='imagenet', include_top=False, input_tensor=input_tensor)
 
@@ -161,11 +161,13 @@ class CustumModel():
         base_modelのモデルパラメタは学習させない。
         (added_layerのモデルパラメタだけを学習させる)
         '''
+        for layer in self.base_model.layers:
+             layer.trainable = False
         '''
         MobileNet
         '''
-        for layer in self.base_model.layers[:72]:
-            layer.trainable = False
+        # for layer in self.base_model.layers[:72]:
+        #     layer.trainable = False
         '''
         InceptionV3
         '''
@@ -206,8 +208,8 @@ if __name__=="__main__":
     # opt = optimizers.Adam(lr=1e-4)
     opt = optimizers.RMSprop(lr=1e-4)
     # opt = optimizers.SGD(lr=1e-3)
-    model.compile(optimizer=opt, loss=[categorical_focal_loss(alpha=.25, gamma=2)], metrics=['accuracy'])
-    # model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+    # model.compile(optimizer=opt, loss=[categorical_focal_loss(alpha=.25, gamma=2)], metrics=['accuracy'])
+    model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
     '''
     モデルの学習
@@ -218,7 +220,7 @@ if __name__=="__main__":
          steps_per_epoch=int(train_gen.length / batch_size),
          callbacks=callbacks,
          validation_data=validate_gen,
-         validation_steps=int(validate_gen.length / 5),
+         validation_steps=int(validate_gen.length / batch_size),
     )
 
     '''

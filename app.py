@@ -16,7 +16,7 @@ label_dict = json.load(open('./model/labels.json', 'r'))
 with graph.as_default():
     # model = CustumModel().createModel(label_dict)
     # model.load_weights('./model/custum_model.h5')
-    model = load_model('./model/custum_xception.h5')
+    model = load_model('./model/custum_model.h5')
 
 @app.route('/', methods = ["GET", "POST"])
 def root():
