@@ -4,7 +4,7 @@ import configparser
 import tensorflow as tf
 from flask import Flask, jsonify, request, render_template, redirect, url_for, send_from_directory
 from threading import Thread
-from tensorflow.keras.models import Sequential, load_model
+from keras.models import Sequential, load_model
 from finetuning import CustumModel
 
 app = Flask(__name__)
@@ -14,9 +14,9 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 graph = tf.get_default_graph()
 label_dict = json.load(open('./model/labels.json', 'r'))
 with graph.as_default():
-    # model = CustumModel().createModel(label_dict)
-    # model.load_weights('./model/custum_model.h5')
-    model = load_model('./model/custum_model.h5')
+    model = CustumModel().createModel(label_dict)
+    model.load_weights('./model/custum_model.h5')
+    # model = load_model('./model/custum_model.h5')
 
 @app.route('/', methods = ["GET", "POST"])
 def root():
