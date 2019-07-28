@@ -5,23 +5,23 @@ import numpy as np
 import pandas as pd
 
 import tensorflow as tf
-from tensorflow.keras import backend as K
+from keras import backend as K
 
-from tensorflow.keras.utils import Sequence
-from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Input, Flatten
-from tensorflow.keras.layers import GlobalAveragePooling2D, BatchNormalization
-from tensorflow.keras.layers import Dense, Dropout, Activation
-from tensorflow.keras.applications import MobileNet, MobileNetV2
-from tensorflow.keras.applications import VGG16, VGG19
-from tensorflow.keras.applications import InceptionResNetV2, InceptionV3
-from tensorflow.keras.applications import Xception
-from tensorflow.keras.applications import ResNet50
-from tensorflow.keras import optimizers, utils
-from tensorflow.keras import regularizers
-from tensorflow.keras.callbacks import ReduceLROnPlateau, ModelCheckpoint
+from keras.utils import Sequence
+from keras.models import Sequential, Model
+from keras.layers import Input, Flatten
+from keras.layers import GlobalAveragePooling2D, BatchNormalization
+from keras.layers import Dense, Dropout, Activation
+from keras.applications import MobileNet, MobileNetV2
+from keras.applications import VGG16, VGG19
+from keras.applications import InceptionResNetV2, InceptionV3
+from keras.applications import Xception
+from keras.applications import ResNet50
+from keras import optimizers, utils
+from keras import regularizers
+from keras.callbacks import ReduceLROnPlateau, ModelCheckpoint
 
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from keras.preprocessing.image import ImageDataGenerator
 
 class DataSequence(Sequence):
     def __init__(self, data_path, label, batch_size, is_valid=False):
@@ -77,50 +77,6 @@ class DataSequence(Sequence):
         ''' 何もしない'''
         pass
 
-def categorical_focal_loss(gamma=2., alpha=.25):
-    """
-    Softmax version of focal loss.
-           m
-      FL = ∑  -alpha * (1 - p_o,c)^gamma * y_o,c * log(p_o,c)
-          c=1
-      where m = number of classes, c = class and o = observation
-    Parameters:
-      alpha -- the same as weighing factor in balanced cross entropy
-      gamma -- focusing parameter for modulating factor (1-p)
-    Default value:
-      gamma -- 2.0 as mentioned in the paper
-      alpha -- 0.25 as mentioned in the paper
-    References:
-        Official paper: https://arxiv.org/pdf/1708.02002.pdf
-        https://www.tensorflow.org/api_docs/python/tf/keras/backend/categorical_crossentropy
-    Usage:
-     model.compile(loss=[categorical_focal_loss(alpha=.25, gamma=2)], metrics=["accuracy"], optimizer=adam)
-    """
-    def categorical_focal_loss_fixed(y_true, y_pred):
-        """
-        :param y_true: A tensor of the same shape as `y_pred`
-        :param y_pred: A tensor resulting from a softmax
-        :return: Output tensor.
-        """
-
-        # Scale predictions so that the class probas of each sample sum to 1
-        y_pred /= K.sum(y_pred, axis=-1, keepdims=True)
-
-        # Clip the prediction value to prevent NaN's and Inf's
-        epsilon = K.epsilon()
-        y_pred = K.clip(y_pred, epsilon, 1. - epsilon)
-
-        # Calculate Cross Entropy
-        cross_entropy = -y_true * K.log(y_pred)
-
-        # Calculate Focal Loss
-        loss = alpha * K.pow(1 - y_pred, gamma) * cross_entropy
-
-        # Sum the losses in mini_batch
-        return K.sum(loss, axis=1)
-
-    return categorical_focal_loss_fixed
-
 class CustumModel():
     def __init__(self):
         shape = (224, 224, 3)
@@ -132,9 +88,9 @@ class CustumModel():
         # self.base_model = VGG16(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = VGG19(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = MobileNet(weights='imagenet', include_top=False, input_tensor=input_tensor)
-        # self.base_model = MobileNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        self.base_model = MobileNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = ResNet50(weights='imagenet', include_top=False, input_tensor=input_tensor)
-        self.base_model = InceptionResNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        # self.base_model = InceptionResNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = Xception(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = InceptionV3(weights='imagenet', include_top=False, input_tensor=input_tensor)
 
@@ -199,16 +155,15 @@ if __name__=="__main__":
 
     callbacks = [
         ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr=1e-10, verbose=1),
-        ModelCheckpoint('./checkpoint/weights.{epoch:02d}-{val_loss:.2f}.h5', verbose=1, mode='auto')
+        # ModelCheckpoint('./checkpoint/weights.{epoch:02d}-{val_loss:.2f}.h5', verbose=1, mode='auto')
     ]
 
     '''
     全体のモデルをコンパイル
     '''
-    # opt = optimizers.Adam(lr=1e-4)
-    opt = optimizers.RMSprop(lr=1e-4)
+    opt = optimizers.Adam(lr=1e-4)
+    # opt = optimizers.RMSprop(lr=1e-4)
     # opt = optimizers.SGD(lr=1e-3)
-    # model.compile(optimizer=opt, loss=[categorical_focal_loss(alpha=.25, gamma=2)], metrics=['accuracy'])
     model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
     '''
@@ -216,7 +171,7 @@ if __name__=="__main__":
     '''
     model.fit_generator(
          train_gen,
-         epochs=150,
+         epochs=50,
          steps_per_epoch=int(train_gen.length / batch_size),
          callbacks=callbacks,
          validation_data=validate_gen,

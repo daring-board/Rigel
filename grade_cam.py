@@ -21,7 +21,8 @@ def build_model():
      - Loaded with load_model
      - Loaded from keras.applications
     """
-    model = load_model('./model/custum_mobilenet.h5')
+    model = load_model('./model/custum_model.h5')
+    model.summary()
     return model
 
 H, W = 224, 224 # Input shape, defined by the model (model.input_shape)
@@ -178,7 +179,7 @@ if __name__ == '__main__':
     ''' 設定ファイルの読み込み '''
     model = build_model()
     guided_model = build_guided_model()
-    base_path = './tmp/'
+    base_path = './upload/'
     for f_name in os.listdir(base_path):
         img_path = base_path + f_name
         ''' VGG16 '''
