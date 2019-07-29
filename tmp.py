@@ -41,7 +41,7 @@ if __name__ == "__main__":
     X = preprocess(f_list)
     y = extractor.predict(X)
     
-    reducer = umap.UMAP(n_components=2, n_neighbors=5)
+    reducer = umap.UMAP(n_components=3, n_neighbors=5)
     features = reducer.fit_transform(y)
 
     # colors = ["red", "green", "blue", "orange", "salmon", "yellow", "yellowgreen", "purple", "black", "grey", "aqua"]
