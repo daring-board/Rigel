@@ -25,8 +25,7 @@ class DCGAN():
         self.latent_dim = 100
 
         # optimizer = Adam(lr=0.0002, beta_1=0.5)
-        # optimizer = SGD(lr=0.001)
-        optimizer = RMSprop(lr=1e-4)
+        optimizer = SGD(lr=1e-5)
 
         # Build and compile the discriminator
         self.discriminator = self.build_discriminator()
@@ -50,6 +49,7 @@ class DCGAN():
         # The combined model  (stacked generator and discriminator)
         # Trains the generator to fool the discriminator
         self.combined = Model(z, valid)
+        optimizer = RMSprop(lr=1e-2)
         self.combined.compile(loss='binary_crossentropy', optimizer=optimizer)
 
     def build_generator(self):
@@ -145,7 +145,9 @@ class DCGAN():
 
             # Train the generator (wants discriminator to mistake images as real)
             g_loss = self.combined.train_on_batch(noise, valid)
+            noise = np.random.normal(0, 1, (batch_size, self.latent_dim))
             g_loss += self.combined.train_on_batch(noise, valid)
+            noise = np.random.normal(0, 1, (batch_size, self.latent_dim))
             g_loss += self.combined.train_on_batch(noise, valid)
             g_loss /= 3
 
@@ -176,4 +178,4 @@ class DCGAN():
 
 if __name__ == '__main__':
     dcgan = DCGAN()
-    dcgan.train(epochs=4000, batch_size=32, save_interval=50)
+    dcgan.train(epochs=4000, batch_size=8, save_interval=50)
