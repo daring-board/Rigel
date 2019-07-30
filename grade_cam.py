@@ -149,10 +149,10 @@ def compute_saliency(model, guided_model, img_path, layer_name='block5_conv3', c
     preprocessed_input = load_image(img_path)
 
     predictions = model.predict(preprocessed_input)
-    cls = np.argmax(predictions)
-    print(cls)
+    cl = np.argmax(predictions)
+    print(cl)
 
-    gradcam = grad_cam(model, preprocessed_input, cls, layer_name)
+    gradcam = grad_cam(model, preprocessed_input, cl, layer_name)
     gb = guided_backprop(guided_model, preprocessed_input, layer_name)
     guided_gradcam = gb * gradcam[..., np.newaxis]
 
@@ -186,7 +186,10 @@ if __name__ == '__main__':
         # gradcam, gb, guided_gradcam = compute_saliency(model, guided_model, layer_name='block5_conv3', img_path=img_path, cls=-1, visualize=True, save=True)
 
         ''' MobileNetV2 '''
-        gradcam, gb, guided_gradcam = compute_saliency(model, guided_model, layer_name='Conv_1', img_path=img_path, cls=-1, visualize=True, save=False)
+        # gradcam, gb, guided_gradcam = compute_saliency(model, guided_model, layer_name='Conv_1', img_path=img_path, cls=-1, visualize=True, save=False)
 
         ''' Xception '''
         # gradcam, gb, guided_gradcam = compute_saliency(model, guided_model, layer_name='conv2d_4', img_path=img_path, cls=-1, visualize=True, save=True)
+
+        ''' InceptionResNetV2 '''
+        gradcam, gb, guided_gradcam = compute_saliency(model, guided_model, layer_name='conv_7b', img_path=img_path, cls=-1, visualize=True, save=True)
