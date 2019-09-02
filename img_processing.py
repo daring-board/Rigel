@@ -25,8 +25,8 @@ def load_labeled_imgs(d_path):
     y = np.asarray(y)
     return x, y, labels
 
-def process(d_path):
-    datas = []
+def process(d_path, switch=False):
+    data, f_list = [], []
     for f_path in os.listdir(d_path):
         if f_path == 'empty': continue
         if f_path == '.DS_Store': continue
@@ -36,6 +36,12 @@ def process(d_path):
         img = cv2.imread(f)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = cv2.resize(img, (224, 224))
-        img = img.astype(np.float32) / 255.0
-        datas.append(img)
-    return datas
+        if switch:
+            img = (img.astype(np.float32) - 127.5) / 127.5
+        else:
+            img = img.astype(np.float32) / 255.0
+        data.append(img)
+        f_list.append(f)
+    if switch:
+        return data, f_list
+    return data

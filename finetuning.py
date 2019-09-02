@@ -20,8 +20,9 @@ from keras.applications import ResNet50
 from keras import optimizers, utils
 from keras import regularizers
 from keras.callbacks import ReduceLROnPlateau, ModelCheckpoint
-
 from keras.preprocessing.image import ImageDataGenerator
+
+from keras_efficientnets import EfficientNetB5
 
 class DataSequence(Sequence):
     def __init__(self, data_path, label, batch_size, is_valid=False):
@@ -93,6 +94,7 @@ class CustumModel():
         # self.base_model = InceptionResNetV2(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = Xception(weights='imagenet', include_top=False, input_tensor=input_tensor)
         # self.base_model = InceptionV3(weights='imagenet', include_top=False, input_tensor=input_tensor)
+        # self.base_model = EfficientNetB5(weights='imagenet', include_top=False, input_tensor=input_tensor)
 
     def createModel(self, label_dict):
         '''
@@ -171,7 +173,7 @@ if __name__=="__main__":
     '''
     model.fit_generator(
          train_gen,
-         epochs=50,
+         epochs=150,
          steps_per_epoch=int(train_gen.length / batch_size),
          callbacks=callbacks,
          validation_data=validate_gen,

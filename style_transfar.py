@@ -146,12 +146,6 @@ print('Model loaded.')
 # get the symbolic outputs of each "key" layer (we gave them unique names).
 outputs_dict = dict([(layer.name, layer.output) for layer in model.layers])
 
-# compute the neural style loss
-# first we need to define 4 util functions
-
-# the gram matrix of an image tensor (feature-wise outer product)
-
-
 def gram_matrix(x):
     assert K.ndim(x) == 3
     if K.image_data_format() == 'channels_first':
@@ -160,13 +154,6 @@ def gram_matrix(x):
         features = K.batch_flatten(K.permute_dimensions(x, (2, 0, 1)))
     gram = K.dot(features, K.transpose(features))
     return gram
-
-# the "style loss" is designed to maintain
-# the style of the reference image in the generated image.
-# It is based on the gram matrices (which capture style) of
-# feature maps from the style reference image
-# and from the generated image
-
 
 def style_loss(style, combination):
     assert K.ndim(style) == 3
@@ -177,16 +164,8 @@ def style_loss(style, combination):
     size = img_nrows * img_ncols
     return K.sum(K.square(S - C)) / (4.0 * (channels ** 2) * (size ** 2))
 
-# an auxiliary loss function
-# designed to maintain the "content" of the
-# base image in the generated image
-
-
 def content_loss(base, combination):
     return K.sum(K.square(combination - base))
-
-# the 3rd loss function, total variation loss,
-# designed to keep the generated image locally coherent
 
 
 def total_variation_loss(x):
@@ -246,14 +225,6 @@ def eval_loss_and_grads(x):
     else:
         grad_values = np.array(outs[1:]).flatten().astype('float64')
     return loss_value, grad_values
-
-# this Evaluator class makes it possible
-# to compute loss and gradients in one pass
-# while retrieving them via two separate functions,
-# "loss" and "grads". This is done because scipy.optimize
-# requires separate functions for loss and gradients,
-# but computing them separately would be inefficient.
-
 
 class Evaluator(object):
 
