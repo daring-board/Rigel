@@ -1,19 +1,36 @@
 <template>
   <div id="app">
     <b-navbar toggleable="lg" type="dark" variant="info">
-      <b-navbar-brand>ストⅡ コスプレ判定機</b-navbar-brand>
+      <b-navbar-brand>DIY</b-navbar-brand>
     </b-navbar>
-    <Labeling id="main"/>
+    <b-card>
+      <b-card-header>
+        晩御飯ルーレット
+      </b-card-header>
+      <b-card-body>
+        <Roulet/>
+      </b-card-body>
+    </b-card>
+    <b-card>
+      <b-card-header>
+        ストⅡ コスプレ判定機
+      </b-card-header>
+      <b-card-body>
+        <Labeling id="main"/>
+      </b-card-body>
+    </b-card>
   </div>
 </template>
 
 <script>
 import Labeling from './components/Labeling.vue'
+import Roulet from './components/Roulet.vue'
 
 export default {
   name: 'app',
   components: {
-    Labeling
+    Labeling,
+    Roulet
   }
 }
 </script>

@@ -61,7 +61,7 @@ export default {
       labels: Labels,
       estimate: null,
       isSpining: false,
-      img: 'kami.jpg',
+      img: null,
       fields: [
         'No',
         {'key': 'label', 'label': 'ラベル'},
