@@ -13,24 +13,24 @@
     </b-card>
     <b-card>
       <b-card-header>
-        ストⅡ コスプレ判定機
+        画像判別機を作成できます！
       </b-card-header>
       <b-card-body>
-        <Labeling id="main"/>
+        <ML1/>
       </b-card-body>
     </b-card>
   </div>
 </template>
 
 <script>
-import Labeling from './components/Labeling.vue'
 import Roulet from './components/Roulet.vue'
+import ML1 from './components/ML1.vue'
 
 export default {
   name: 'app',
   components: {
-    Labeling,
-    Roulet
+    Roulet,
+    ML1,
   }
 }
 </script>
