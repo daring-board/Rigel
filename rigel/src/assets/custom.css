@@ -1,0 +1,55 @@
+
+
+.navbar {
+	background-color: #0e8044;
+}
+
+.card {
+	background-color: #1d2731;
+}
+
+.roulet .btn {
+	border-radius: 0;
+	border-color: transparent;
+}
+
+.roulet-btn {
+	position: relative;
+	transition:800ms ease all;
+	outline:none;
+	background-color: #d9b310;
+	margin-top: 25px;
+	width: 200px;
+	height: 50px;
+}
+
+.roulet-btn:hover {
+	background-color: #1d2731;
+	color: #d9b310;
+}
+
+.roulet-btn:before, .roulet-btn:after {
+	content:'';
+	position:absolute;
+	height:2px;
+	width:0;
+	background: #d9b310;
+	transition:400ms ease all;
+}
+
+.roulet-btn:before {
+	top:0;
+	right:0;
+}
+.roulet-btn:after{
+	left:0;
+	bottom:0;
+}
+
+.roulet-btn:hover:before,.roulet-btn:hover:after{
+	width:100%;
+	transition:800ms ease all;
+}
+.roulet-btn img {
+	width: 40px;
+}

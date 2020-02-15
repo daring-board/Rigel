@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <b-navbar toggleable="lg" type="dark" variant="info">
+	<b-navbar toggleable="lg">
       <b-navbar-brand>DIY</b-navbar-brand>
     </b-navbar>
     <b-card>
@@ -41,7 +41,7 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  color: #fafdff;
 }
 #main{
   padding-top: 10px;
