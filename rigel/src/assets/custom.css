@@ -1,19 +1,31 @@
+body {
+  background-color: #1d2731
+}
 
+.navbar, .card-header {
+	background: linear-gradient(-135deg, #193832, #0e8044);
+}
 
-.navbar {
-	background-color: #0e8044;
+.navbar-light .navbar-brand {
+	color: #f4f4f4;
+	font-weight: bold;
 }
 
 .card {
-	background-color: #1d2731;
+	background-color: #f4f4f4;
+	border: none;
 }
 
-.roulet .btn {
+.card-body {
+	padding: 0 0 10px 0;
+}
+
+.roulet .btn, .ml1 .btn {
 	border-radius: 0;
 	border-color: transparent;
 }
 
-.roulet-btn {
+.roulet-btn, .ai-btn {
 	position: relative;
 	transition:800ms ease all;
 	outline:none;
@@ -23,12 +35,13 @@
 	height: 50px;
 }
 
-.roulet-btn:hover {
-	background-color: #1d2731;
+.roulet-btn:hover, .ai-btn:hover {
+	background-color: #f4f4f4;
 	color: #d9b310;
 }
 
-.roulet-btn:before, .roulet-btn:after {
+.roulet-btn:before, .roulet-btn:after
+, .ai-btn:before, .ai-btn:after {
 	content:'';
 	position:absolute;
 	height:2px;
@@ -37,19 +50,21 @@
 	transition:400ms ease all;
 }
 
-.roulet-btn:before {
+.roulet-btn:before, .ai-btn:before {
 	top:0;
 	right:0;
 }
-.roulet-btn:after{
+.roulet-btn:after, .ai-btn:after {
 	left:0;
 	bottom:0;
 }
 
-.roulet-btn:hover:before,.roulet-btn:hover:after{
+.roulet-btn:hover:before,.roulet-btn:hover:after
+,.ai-btn:hover:before, .ai-btn:hover:after {
 	width:100%;
 	transition:800ms ease all;
 }
-.roulet-btn img {
-	width: 40px;
+
+.roulet-btn:focus, .ai-btn:focus {
+	box-shadow: none;
 }

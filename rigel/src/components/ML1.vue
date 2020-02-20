@@ -2,7 +2,7 @@
   <div class="ml1">
     <video autoplay playsinline muted id="webcam" :width="width" :height="height"></video>
     <div v-if="!is_try">
-      <b-button @click="start_process">賢くなるAIを試す</b-button>
+      <b-button class="ai-btn" @click="start_process">賢くなるAIを試す</b-button>
     </div>
     <div v-else>
       <b-spinner v-if="is_loading" variant="primary" label="Spinning"></b-spinner>
@@ -67,7 +67,7 @@ export default {
       this.height = 224
       const webcamEl = document.getElementById('webcam')
       this.webcam = await tf.data.webcam(webcamEl)
-      
+
       while (true) {
         if (this.classifier.getNumClasses() > 0) {
           const img = await this.webcam.capture()
