@@ -10,12 +10,33 @@
 
       <div>
         <p>下のボタンを押下するとAIが画像を覚えてくれます。</p>
-        <p>『Aの画像はこれだよ』という気持ちでボタンをクリックしてください。</p>
-        <p>AIは画像を3種類だけ覚える事ができます。（A, B, Cの3種類）</p>
+        <p>『class 1の画像はこれだよ』という気持ちでボタンを押してください。</p>
       </div>
-      <b-button class='button' @click="addExample(0)">Add A</b-button>
-      <b-button class='button' @click="addExample(1)">Add B</b-button>
-      <b-button class='button' @click="addExample(2)">Add C</b-button>
+      <b-container>
+        <b-row class='row-centering'>
+          <div v-for="(cls, key) in class_list" :key="key">
+            <b-col>
+              <b-button class='button' @click="addExample(key)">{{cls.class_name}}</b-button>
+            </b-col>
+          </div>
+        </b-row>
+      </b-container>
+      <b-button class='button' v-b-modal.add-modal>分類を増やす</b-button>
+      <b-modal id="add-modal" title="分類を増やす" @ok='addClass()'>
+        <b-row>
+          <b-col><label>クラス名:</label></b-col>
+          <b-col><b-form-input v-model="add_obj"></b-form-input></b-col>
+        </b-row>
+      </b-modal>
+      <b-button class='button' v-b-modal.modify-modal>クラス名を変更</b-button>
+      <b-modal id="modify-modal" title="クラス名を変更" hide-footer>
+        <div v-for="(cls, key) in class_list" :key="key">
+          <b-row>
+            <b-col><label>クラス{{key+1}}の名称を変更:</label></b-col>
+            <b-col><b-form-input v-model="cls.class_name"></b-form-input></b-col>
+          </b-row>
+        </div>
+      </b-modal>
     </div>
   </div>
 </template>
@@ -36,10 +57,23 @@ export default {
       message: '',
       webcam: null,
       width: 0,
-      height: 0
+      height: 0,
+      class_list: [
+        {class_name: 'class 1'},
+        {class_name: 'class 2'},
+        {class_name: 'class 3'}
+      ],
+      add_obj: ''
     }
   },
   methods: {
+    addClass: function(){
+      if (this.add_obj.length === 0){
+        this.class_list.push({class_name: 'class ' + (this.class_list.length+1)})
+      }else{
+        this.class_list.push({class_name: this.add_obj})
+      }
+    },
     addExample: async function(classId){
       const img = await this.webcam.capture()
       const activation = this.net.infer(img, 'conv_preds')
@@ -55,7 +89,9 @@ export default {
       this.is_loading = true
 
       console.log('Loading mobilenet..')
-      this.net = await mobilenet.load()
+      this.net = await mobilenet.load({
+        version: 2, alpha: 1.0
+      })
       console.log('Successfully loaded model')
 
       console.log('Create Classifier')
@@ -74,7 +110,6 @@ export default {
           const activation = this.net.infer(img, 'conv_preds')
           console.log(activation)
           const result = await this.classifier.predictClass(activation);
-          const classes = ['A', 'B', 'C']
           var pre = ''
           var post = ''
           if(result.confidences[result.label] > 0.9){
@@ -87,7 +122,7 @@ export default {
           }else{
             continue
           }
-          this.message = `${pre}${classes[result.label]}が見えている${post}\n`
+          this.message = `${pre}${this.class_list[result.label].class_name}が見えている${post}\n`
           img.dispose();
         }
         await tf.nextFrame();
@@ -99,5 +134,8 @@ export default {
 <style scoped>
 .button {
   margin: 10px;
+}
+.row-centering {
+  margin: 0 auto;
 }
 </style>>
