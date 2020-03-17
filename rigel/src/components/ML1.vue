@@ -20,23 +20,29 @@
             </b-col>
           </div>
         </b-row>
-      </b-container>
-      <b-button class='button' v-b-modal.add-modal>分類を増やす</b-button>
-      <b-modal id="add-modal" title="分類を増やす" @ok='addClass()'>
-        <b-row>
-          <b-col><label>クラス名:</label></b-col>
-          <b-col><b-form-input v-model="add_obj"></b-form-input></b-col>
+        <b-row class='row-centering'>
+          <b-button class='button' v-b-modal.add-modal>分類を増やす</b-button>
+          <b-modal id="add-modal" title="分類を増やす" @ok='addClass()'>
+            <b-row>
+              <b-col><label>クラス名:</label></b-col>
+              <b-col><b-form-input v-model="add_obj"></b-form-input></b-col>
+            </b-row>
+          </b-modal>
+          <b-button class='button' v-b-modal.modify-modal>クラス名を変更</b-button>
+          <b-modal id="modify-modal" title="クラス名を変更" hide-footer>
+            <div v-for="(cls, key) in class_list" :key="key">
+              <b-row>
+                <b-col><label>クラス{{key+1}}の名称を変更:</label></b-col>
+                <b-col><b-form-input v-model="cls.class_name"></b-form-input></b-col>
+              </b-row>
+            </div>
+          </b-modal>
         </b-row>
-      </b-modal>
-      <b-button class='button' v-b-modal.modify-modal>クラス名を変更</b-button>
-      <b-modal id="modify-modal" title="クラス名を変更" hide-footer>
-        <div v-for="(cls, key) in class_list" :key="key">
-          <b-row>
-            <b-col><label>クラス{{key+1}}の名称を変更:</label></b-col>
-            <b-col><b-form-input v-model="cls.class_name"></b-form-input></b-col>
-          </b-row>
-        </div>
-      </b-modal>
+        <b-row class='row-centering'>
+          <b-button class='button' @click="saveKNN">学習したAIを保存</b-button>
+          <b-button class='button' @click="loadKNN">学習済みAIを読込</b-button>
+        </b-row>
+      </b-container>
     </div>
   </div>
 </template>
@@ -45,6 +51,9 @@
 import * as tf from '@tensorflow/tfjs'
 import * as mobilenet from '@tensorflow-models/mobilenet'
 import * as knn from '@tensorflow-models/knn-classifier'
+import firebase from 'firebase/app'
+import 'firebase/storage'
+import axios from 'axios'
 
 export default {
   name: 'ML1',
@@ -63,10 +72,46 @@ export default {
         {class_name: 'class 2'},
         {class_name: 'class 3'}
       ],
-      add_obj: ''
+      add_obj: '',
+      storageRef: ''
     }
   },
+  mounted: function() {
+    this.storageRef = firebase.storage().ref().child('ml1/knn.json')
+  },
   methods: {
+    saveKNN: async function() {
+      /* eslint-disable */
+      let dataset = this.classifier.getClassifierDataset()
+      var datasetObj = {}
+      Object.keys(dataset).forEach((key) => {
+        let data = dataset[key].dataSync()
+        datasetObj[key] = Array.from(data)
+      });
+      let jsonStr = JSON.stringify(datasetObj)
+      localStorage.setItem("knn_classifier", jsonStr)
+      this.storageRef.putString(jsonStr).then(function(snapshot) {
+        console.log('Uploaded a raw string!')
+      })
+    },
+    loadKNN: function(){
+      /* eslint-disable */
+      let dataset = localStorage.getItem("knn_classifier")
+      let url = 'https://us-central1-rigel-b11c1.cloudfunctions.net/getData'
+      axios.get(url, {headers: {'Access-Control-Allow-Origin': '*'}})
+        .then(response => {
+          console.log(response.data) // mockData
+          console.log(response.status) // 200
+          var obj = response.data
+          this.classifier = knn.create()
+          Object.keys(obj).forEach((key) => {
+            if (!Array.isArray(obj[key])) return
+            console.log(obj[key])
+            obj[key] = tf.tensor(obj[key], [obj[key].length / 1280, 1280])
+          }, obj)
+          this.classifier.setClassifierDataset(obj)
+        })
+     },
     addClass: function(){
       if (this.add_obj.length === 0){
         this.class_list.push({class_name: 'class ' + (this.class_list.length+1)})
@@ -108,7 +153,7 @@ export default {
         if (this.classifier.getNumClasses() > 0) {
           const img = await this.webcam.capture()
           const activation = this.net.infer(img, 'conv_preds')
-          console.log(activation)
+          // console.log(activation)
           const result = await this.classifier.predictClass(activation);
           var pre = ''
           var post = ''
