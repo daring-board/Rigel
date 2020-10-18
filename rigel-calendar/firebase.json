@@ -1,0 +1,11 @@
+{
+  "hosting": {
+    "site": "rigel-calendar",
+    "public": "dist",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
