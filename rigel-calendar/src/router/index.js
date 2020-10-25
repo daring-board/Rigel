@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../components/Home.vue'
 import Vaccination from '../components/Vaccination.vue'
+import Registration from '../components/Registration.vue'
 
 Vue.use(VueRouter)
 
@@ -11,9 +12,14 @@ const routes = [
     name: 'Home',
     component: Home
   },{
-    path: '/vaccination',
+    path: '/vaccination/:month',
     name: 'Vaccination',
-    component: Vaccination
+    component: Vaccination,
+    props: true 
+  },{
+    path: '/registration',
+    name: 'Registration',
+    component: Registration
   }
 ]
 

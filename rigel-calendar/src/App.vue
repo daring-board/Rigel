@@ -15,17 +15,21 @@
       dark app clipped bottom temporary v-model="drawer"
     >
       <v-list>
-        <v-list-item @click="$router.push('/')">
+        <v-list-item @click="routing('/')">
           <v-list-item-icon><v-icon>mdi-home</v-icon></v-list-item-icon>
           <v-list-item-content>ホーム</v-list-item-content>
         </v-list-item>
-        <v-list-item @click="$router.push('vaccination')">
+        <v-list-item @click="vaccination_route()">
           <v-list-item-icon><v-icon>mdi-needle</v-icon></v-list-item-icon>
           <v-list-item-content>予防接種</v-list-item-content>
         </v-list-item>
-        <v-list-item @click="$router.push('about')">
+        <v-list-item @click="routing('/registration')">
+          <v-list-item-icon><v-icon>mdi-needle</v-icon></v-list-item-icon>
+          <v-list-item-content>お誕生日登録</v-list-item-content>
+        </v-list-item>
+        <v-list-item @click="routing('/about')">
           <v-list-item-icon><v-icon>mdi-help-box</v-icon></v-list-item-icon>
-          <v-list-item-content>About</v-list-item-content>
+          <v-list-item-content>ヘルプ</v-list-item-content>
        </v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -43,5 +47,26 @@ export default {
   data: () => ({
     drawer: false,
   }),
+  methods: {
+    vaccination_route(){
+      let today = new Date();
+      if(this.$store.state.personal.birth_day === ''){
+        // Alart を表示
+        console.log('Alartを表示')
+      }else{
+        let year = today.getFullYear();
+        let month = today.getMonth()+1;
+        let birth_info = this.$store.state.personal.birth_day.split('-');
+        let year_diff = year - parseInt(birth_info[0], 10);
+        let month_diff = year_diff * 12 + month - parseInt(birth_info[1], 10);
+        console.log(month_diff);
+        console.log(this.$store.state.personal);
+        this.$router.push({path: `/vaccination/${month_diff}`}).catch(err => {console.log(err)});
+      }
+    },
+    routing(target){
+      this.$router.push({path: target}).catch(err => {console.log(err)});
+    }
+  }
 };
 </script>
