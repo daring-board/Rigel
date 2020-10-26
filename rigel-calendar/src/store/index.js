@@ -1,72 +1,48 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import createPersistedState from "vuex-persistedstate";
+import firebase from 'firebase'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
     personal: {
-      birth_day: '',
-      last_name: '',
-      first_name: ''
+      birth_day: '', last_name: '', first_name: ''
     },
-    vaccinations: {
-      hiv_1: {
-        display_name: 'ヒブ（インフルエンザ菌B型）:1期',
-        status: 0,
-        needed: 3,
-        required: true, 
-        spans: [2, 3, 4, 5, 6],
-        recommends: [2, 3, 4],
-        interval: {num: 6, unit: 'day'}
-      },
-      hiv_2: {
-        display_name: 'ヒブ（インフルエンザ菌B型）:2期',
-        status: 0,
-        needed: 1,
-        required: true, 
-        spans: [12, 13, 14, 15, 16, 17, 18, 19, 20],
-        recommends: [12, 13, 14],
-        interval: {num: 6, unit: 'day'}
-      },
-      pcv13_1: {
-        display_name: '肺炎球菌:1期',
-        status: 0,
-        needed: 3,
-        required: true, 
-        spans: [2, 3, 4, 5, 6],
-        recommends: [2, 3, 4],
-        interval: {num: 6, unit: 'day'}
-      },
-      pcv13_2: {
-        display_name: '肺炎球菌:2期',
-        status: 0,
-        needed: 1,
-        required: true, 
-        spans: [12, 13, 14],
-        recommends: [12, 13, 14],
-        interval: {num: 6, unit: 'day'}
-      },
-      HepatitisB: {
-        display_name: 'B型肺炎',
-        status: 0,
-        needed: 3,
-        required: true,
-        spans: [2, 3, 4, 5, 6, 7, 8],
-        recommends: [2, 3, 7],
-        interval: {num: 6, unit: 'day'}
-      }
-    }
+    vaccinations: null,
+    month: 0,
   },
   mutations: {
+    setMonth(state, month){
+      state.month = month;
+    },
     setPersonal(state, personal){
-      state.personal.last_name = personal.last_name;
-      state.personal.first_name = personal.first_name;
-      state.personal.birth_day = personal.birth_day;
+      state.personal = personal;
+      firebase.database().ref(`/users/${firebase.auth().currentUser.uid}`).set({
+        last_name: state.personal.last_name,
+        first_name: state.personal.first_name,
+        birth_day: state.personal.birth_day
+      });
+    },
+    getPersonal(state){
+      firebase.database().ref(`/users/${firebase.auth().currentUser.uid}`).once('value').then(function(snapshot) {
+        state.personal = snapshot.val();
+      });
+    },
+    getVaccinations(state){
+      firebase.database().ref('/vaccinations/').once('value').then(function(snapshot) {
+        state.vaccinations = snapshot.val();
+      });
     }
   },
   actions: {
   },
   modules: {
-  }
+  },
+  plugins: [createPersistedState({
+    key: 'rigel-calendar',
+    paths: ['rigel-calendar'],
+    storage: window.sessionStorage
+})]
 })

@@ -19,6 +19,9 @@
     name: 'Home',
     data: () => ({
     }),
+    mounted: function() {
+      this.$store.commit('getPersonal');
+    },
     methods: {
       vaccination_route(){
         let today = new Date();
@@ -33,7 +36,8 @@
           let month_diff = year_diff * 12 + month - parseInt(birth_info[1], 10);
           console.log(month_diff);
           console.log(this.$store.state.personal);
-          this.$router.push({path: `/vaccination/${month_diff}`}).catch(err => {console.log(err)});
+          this.$store.commit('setMonth', month_diff-1);
+          this.$router.push({path: `/vaccination/`}).catch(err => {console.log(err)});
         }
       }
     }

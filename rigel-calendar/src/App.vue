@@ -31,6 +31,10 @@
           <v-list-item-icon><v-icon>mdi-help-box</v-icon></v-list-item-icon>
           <v-list-item-content>ヘルプ</v-list-item-content>
        </v-list-item>
+        <v-list-item @click="sign_out()">
+          <v-list-item-icon><v-icon>mdi-help-box</v-icon></v-list-item-icon>
+          <v-list-item-content>サインアウト</v-list-item-content>
+       </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
@@ -41,12 +45,12 @@
 </template>
 
 <script>
-
+import firebase from 'firebase'
 export default {
   name: 'App',
   data: () => ({
     drawer: false,
-  }),
+	}),
   methods: {
     vaccination_route(){
       let today = new Date();
@@ -61,11 +65,14 @@ export default {
         let month_diff = year_diff * 12 + month - parseInt(birth_info[1], 10);
         console.log(month_diff);
         console.log(this.$store.state.personal);
-        this.$router.push({path: `/vaccination/${month_diff}`}).catch(err => {console.log(err)});
+        this.$router.push({path: `/vaccination/`}).catch(err => {console.log(err)});
       }
     },
     routing(target){
       this.$router.push({path: target}).catch(err => {console.log(err)});
+    },
+    sign_out(){
+      firebase.auth().signOut();
     }
   }
 };

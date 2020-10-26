@@ -89,6 +89,7 @@
                 this.display_birth_day = this.$store.state.personal.birth_day;
                 console.log(this.display_birth_day);
             }
+            console.log(this.$store.state.uid)
         },
         watch: {
             menu (val) {

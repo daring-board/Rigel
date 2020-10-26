@@ -29,11 +29,13 @@
             month: {
                 handler: function(){
                     this.items = [];
+                    console.log(this.month)
                     const vaccinations = this.$store.state.vaccinations;
+                    console.log(JSON.stringify(vaccinations));
                     const keys = Object.keys(vaccinations);
                     keys.forEach(k => {
                         let vac = vaccinations[k];
-                        let month = parseInt(this.month);
+                        let month = parseInt(this.month)+1;
                         if(vac.spans.indexOf(month) < 0){
                             return
                         }
