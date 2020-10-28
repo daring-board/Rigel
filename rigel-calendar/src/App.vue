@@ -15,7 +15,7 @@
       dark app clipped bottom temporary v-model="drawer"
     >
       <v-list>
-        <v-list-item @click="routing('/')">
+        <v-list-item @click="routing('/home')">
           <v-list-item-icon><v-icon>mdi-home</v-icon></v-list-item-icon>
           <v-list-item-content>ホーム</v-list-item-content>
         </v-list-item>
@@ -45,7 +45,9 @@
 </template>
 
 <script>
-import firebase from 'firebase'
+import firebase from 'firebase/app';
+import 'firebase/auth'
+
 export default {
   name: 'App',
   data: () => ({

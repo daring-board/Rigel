@@ -1,14 +1,15 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import createPersistedState from "vuex-persistedstate";
-import firebase from 'firebase'
+import firebase from 'firebase/app';
+import 'firebase/database';
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
     personal: {
-      birth_day: '', last_name: '', first_name: ''
+      birth_day: '', nickname: ''
     },
     vaccinations: null,
     month: 0,
@@ -20,12 +21,12 @@ export default new Vuex.Store({
     setPersonal(state, personal){
       state.personal = personal;
       firebase.database().ref(`/users/${firebase.auth().currentUser.uid}`).set({
-        last_name: state.personal.last_name,
-        first_name: state.personal.first_name,
+        nickname: state.personal.nickname,
         birth_day: state.personal.birth_day
       });
     },
     getPersonal(state){
+      console.log(firebase.auth().currentUser);
       firebase.database().ref(`/users/${firebase.auth().currentUser.uid}`).once('value').then(function(snapshot) {
         state.personal = snapshot.val();
       });

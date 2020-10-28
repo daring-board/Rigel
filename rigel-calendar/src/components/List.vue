@@ -6,7 +6,16 @@
                     :headers="headers"
                     :items="items"
                     class="elevation-1"
-                ></v-data-table>
+                >
+                    <template v-slot:item.required="{ item }">
+                        <v-chip
+                            :color="(item.required == '定期')? 'green': 'orange'"
+                            dark
+                        >
+                            {{ item.required }}
+                        </v-chip>
+                    </template>
+                </v-data-table>
             </v-col>
         </v-row>
     </v-container>
@@ -25,6 +34,26 @@
             ]
         }),
         props: ['month'],
+        methods: {
+            setItems(vaccinations) {
+                const keys = Object.keys(vaccinations);
+                keys.forEach(k => {
+                    let vac = vaccinations[k];
+                    let month = parseInt(this.month)+1;
+                    if(vac.spans.indexOf(month) < 0){
+                        return
+                    }
+                    if(vac.recommends.indexOf(month) < 0){
+                        return
+                    }
+                    let interval = `${vac.interval.num} ${vac.interval.unit}`;
+                    vac.days = interval;
+                    vac.state = `${vac.status} / ${vac.needed} 回`;
+                    vac.required = (vac.required)? '定期': '任意' ;
+                    this.items.push(vac);
+                });
+            }
+        },
         watch:  {
             month: {
                 handler: function(){
@@ -32,22 +61,15 @@
                     console.log(this.month)
                     const vaccinations = this.$store.state.vaccinations;
                     console.log(JSON.stringify(vaccinations));
-                    const keys = Object.keys(vaccinations);
-                    keys.forEach(k => {
-                        let vac = vaccinations[k];
-                        let month = parseInt(this.month)+1;
-                        if(vac.spans.indexOf(month) < 0){
-                            return
-                        }
-                        if(vac.recommends.indexOf(month) < 0){
-                            return
-                        }
-                        let interval = `${vac.interval.num} ${vac.interval.unit}`;
-                        vac.days = interval;
-                        vac.state = `${vac.status} 回`
-                        this.items.push(vac);
-                    });
-                    console.log(this.items);
+                    if(vaccinations == null){
+                        this.$store.commit('getPersonal').then(() => {
+                            this.setItems(vaccinations);
+                            console.log(this.items);
+                        });
+                    }else{
+                        this.setItems(vaccinations);
+                        console.log(this.items);
+                    }
                 },
                 immediate: true
             }

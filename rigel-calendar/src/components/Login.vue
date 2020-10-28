@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import firebase from 'firebase'
+import firebase from 'firebase/app';
 import firebaseui from 'firebaseui-ja';
  
 export default {
@@ -17,7 +17,7 @@ export default {
             signInOptions: [
                 firebase.auth.GoogleAuthProvider.PROVIDER_ID,
             ],
-            signInSuccessUrl: '/',
+            signInSuccessUrl: '/home',
         });
     },
     methods: {

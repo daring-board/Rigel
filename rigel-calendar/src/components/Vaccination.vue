@@ -10,13 +10,15 @@
         >
             <v-tabs-slider color="cyan"></v-tabs-slider>
             <v-tab
-                v-for="i in 24"
+                v-for="i in 40"
                 :key="i"
                 @click="routing(i)"
             >
-                {{ i }}か月
+                {{get_month(i)}}
             </v-tab>
         </v-tabs>
+            <v-card-text>{{$store.state.personal.nickname}}の予防接種</v-card-text>
+        <v-divider></v-divider>
         <List :month="$store.state.month"/>
     </div>
 </template>
@@ -28,13 +30,23 @@
         name: 'Vaccination',
         components: {List},
         data: () => ({}),
-        mounted: function(){
+        created: function(){
             this.$store.commit('getVaccinations');
         },
         methods: {
             routing(i){
                 this.$store.commit('setMonth', i);
                 // this.$router.push({path: `/vaccination/`}).catch(err => {console.log(err)});
+            },
+            get_month(i){
+                let birth_info = this.$store.state.personal.birth_day.split('-');
+                let month = parseInt(birth_info[1], 10)+i;
+                let year = parseInt(birth_info[0], 10);
+                if(month > 12){
+                    year = year + Math.floor(month / 12);
+                    month = month % 12;
+                }
+                return `${year}年${month}月`
             }
         }
     }

@@ -2,26 +2,14 @@
     <v-container>
         <v-row>
             <v-col
-                cols="6"
+                cols="12"
                 md="4"
             >
                 <v-text-field
-                    v-model="last_name"
+                    v-model="nickname"
                     :rules="nameRules"
                     :counter="10"
-                    label="姓"
-                    required
-                ></v-text-field>
-            </v-col>
-            <v-col
-                cols="6"
-                md="4"
-            >
-                <v-text-field
-                    v-model="first_name"
-                    :rules="nameRules"
-                    :counter="10"
-                    label="名"
+                    label="ニックネーム"
                     required
                 ></v-text-field>
             </v-col>
@@ -70,7 +58,7 @@
         data: () => ({
             // Name
             valid: false,
-            last_name: '', first_name: '',
+            nickname: '',
             nameRules: [
                 v => !!v || 'Name is required',
                 v => v.length <= 10 || 'Name must be less than 10 characters',
@@ -81,15 +69,13 @@
             menu: false,
         }),
         mounted: function (){
-            this.last_name = this.$store.state.personal.last_name;
-            this.first_name = this.$store.state.personal.first_name;
+            this.nickname = this.$store.state.personal.nickname;
             this.date = this.$store.state.personal.birth_day;
             if (this.$store.state.personal.birth_day != ''){
                 console.log(this.$store.state.personal);
                 this.display_birth_day = this.$store.state.personal.birth_day;
                 console.log(this.display_birth_day);
             }
-            console.log(this.$store.state.uid)
         },
         watch: {
             menu (val) {
@@ -102,11 +88,10 @@
             },
             commit(){
                 this.$store.commit('setPersonal', {
-                    'last_name': this.last_name,
-                    'first_name': this.first_name,
+                    'nickname': this.nickname,
                     'birth_day': this.birth_day
                 });
-                this.$router.push('/');
+                this.$router.push('/home');
             }
         },
     }
