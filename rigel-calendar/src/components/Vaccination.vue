@@ -17,7 +17,12 @@
                 {{get_month(i)}}
             </v-tab>
         </v-tabs>
-            <v-card-text>{{$store.state.personal.nickname}}の予防接種</v-card-text>
+        <v-card
+            class="mx-auto"
+            outlined
+        >
+            <v-card-title>{{$store.state.personal.nickname}}の予防接種</v-card-title>
+        </v-card>
         <v-divider></v-divider>
         <List :month="$store.state.month"/>
     </div>
@@ -36,7 +41,6 @@
         methods: {
             routing(i){
                 this.$store.commit('setMonth', i);
-                // this.$router.push({path: `/vaccination/`}).catch(err => {console.log(err)});
             },
             get_month(i){
                 let birth_info = this.$store.state.personal.birth_day.split('-');

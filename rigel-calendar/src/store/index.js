@@ -9,7 +9,8 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     personal: {
-      birth_day: '', nickname: ''
+      birth_day: '', nickname: '',
+      status: {'hiv_1': 'reservation', 'HepatitisB': 'complete'}
     },
     vaccinations: null,
     month: 0,
@@ -22,7 +23,8 @@ export default new Vuex.Store({
       state.personal = personal;
       firebase.database().ref(`/users/${firebase.auth().currentUser.uid}`).set({
         nickname: state.personal.nickname,
-        birth_day: state.personal.birth_day
+        birth_day: state.personal.birth_day,
+        status: {'hiv_1': 'reservation', 'HepatitisB': 'complete'}
       });
     },
     getPersonal(state){

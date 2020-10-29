@@ -24,7 +24,7 @@
           <v-list-item-content>予防接種</v-list-item-content>
         </v-list-item>
         <v-list-item @click="routing('/registration')">
-          <v-list-item-icon><v-icon>mdi-needle</v-icon></v-list-item-icon>
+          <v-list-item-icon><v-icon>mdi-account-plus-outline</v-icon></v-list-item-icon>
           <v-list-item-content>お誕生日登録</v-list-item-content>
         </v-list-item>
         <v-list-item @click="routing('/about')">
@@ -32,7 +32,7 @@
           <v-list-item-content>ヘルプ</v-list-item-content>
        </v-list-item>
         <v-list-item @click="sign_out()">
-          <v-list-item-icon><v-icon>mdi-help-box</v-icon></v-list-item-icon>
+          <v-list-item-icon><v-icon>mdi-logout</v-icon></v-list-item-icon>
           <v-list-item-content>サインアウト</v-list-item-content>
        </v-list-item>
       </v-list>

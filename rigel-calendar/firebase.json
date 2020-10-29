@@ -1,6 +1,10 @@
 {
   "hosting": {
     "site": "rigel-calendar",
+    "rewrites": [{
+      "source": "**",
+      "destination": "/index.html"
+    }],
     "public": "dist",
     "ignore": [
       "firebase.json",
