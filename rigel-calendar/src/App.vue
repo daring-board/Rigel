@@ -38,7 +38,7 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-main>
+    <v-main class="deep-purple lighten-5">
       <router-view></router-view>
     </v-main>
   </v-app>

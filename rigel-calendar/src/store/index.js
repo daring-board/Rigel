@@ -10,12 +10,16 @@ export default new Vuex.Store({
   state: {
     personal: {
       birth_day: '', nickname: '',
-      status: {'hiv_1': 'reservation', 'HepatitisB': 'complete'}
+      status: {'dummy': 'complete'}
     },
     vaccinations: null,
+    selected: null,
     month: 0,
   },
   mutations: {
+    setSelect(state, vaccin){
+      state.selected = vaccin;
+    },
     setMonth(state, month){
       state.month = month;
     },
@@ -24,7 +28,7 @@ export default new Vuex.Store({
       firebase.database().ref(`/users/${firebase.auth().currentUser.uid}`).set({
         nickname: state.personal.nickname,
         birth_day: state.personal.birth_day,
-        status: {'hiv_1': 'reservation', 'HepatitisB': 'complete'}
+        status: state.personal.status
       });
     },
     getPersonal(state){

@@ -8,7 +8,7 @@
             show-arrows
             v-model="$store.state.month"
         >
-            <v-tabs-slider color="cyan"></v-tabs-slider>
+            <v-tabs-slider color="primary"></v-tabs-slider>
             <v-tab
                 v-for="i in 40"
                 :key="i"
@@ -18,22 +18,22 @@
             </v-tab>
         </v-tabs>
         <v-card
-            class="mx-auto"
+            class="mx-auto deep-purple lighten-5 text_default--text"
             outlined
         >
             <v-card-title>{{$store.state.personal.nickname}}の予防接種</v-card-title>
         </v-card>
         <v-divider></v-divider>
-        <List :month="$store.state.month"/>
+        <Cards :month="$store.state.month"/>
     </div>
 </template>
 
 <script>
-    import List from '@/components/List.vue'
+    import Cards from '@/components/Cards.vue'
 
     export default {
         name: 'Vaccination',
-        components: {List},
+        components: {Cards},
         data: () => ({}),
         created: function(){
             this.$store.commit('getVaccinations');

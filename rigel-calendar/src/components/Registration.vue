@@ -89,7 +89,8 @@
             commit(){
                 this.$store.commit('setPersonal', {
                     'nickname': this.nickname,
-                    'birth_day': this.birth_day
+                    'birth_day': this.birth_day,
+                    'status': {'dummy': 'complete'}
                 });
                 this.$router.push('/home');
             }
