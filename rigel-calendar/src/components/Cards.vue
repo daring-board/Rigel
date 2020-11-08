@@ -8,13 +8,16 @@
                         <v-card
                             max-width="500"
                             class="mx-auto text_default--text"
-                            :color="color(item.status)"
+                            :color="color(item.my.status)"
                         >
-                            <v-card-title class="headline">{{item.display_name}}: {{btnWord(item.status)}}</v-card-title>
+                            <v-card-title 
+                                class="headline"
+                                style="white-space:pre-wrap; word-wrap:break-word;"
+                            >{{item.display_name}}: {{btnWord(item.my)}}</v-card-title>
                             <v-divider></v-divider>
                             <v-card-text>
                                 {{item.required}}<br/>
-                                接種状況：{{item.state}}<br/>
+                                必要な接種回数：{{item.state}}<br/>
                                 間隔日数：{{item.days}}<br/>
                             </v-card-text>
                         </v-card>
@@ -23,9 +26,7 @@
             </template>
             <!-- ダイアログコンテンツ -->
             <v-card class="deep-purple lighten-5">
-                <v-card-text>
-                    <Form/>
-                </v-card-text>
+                <Form/>
                 <v-card-actions>
                     <v-btn color="primary" @click="commit()">確定</v-btn>
                     <v-btn color="warning" @click="dialog = false">戻る</v-btn>
@@ -50,22 +51,23 @@
             commit(){
                 this.dialog = false;
                 let vaccin = this.$store.state.selected;
-                if(vaccin.status == 'complete'){
+                if(vaccin.my.status == 'complete'){
                     console.log('No Chainge');
-                }else if(vaccin.status == 'reservation'){
+                }else if(vaccin.my.status == 'reservation'){
                     let personal = this.$store.state.personal;
-                    personal.status[vaccin.key] = 'complete';
+                    personal.vaccins[vaccin.key].status = 'complete';
                     this.$store.commit('setPersonal', personal);
 
                     console.log(this.items[vaccin.id])
-                    this.items[vaccin.id].status = personal.status[vaccin.key];
-                }else if(vaccin.status == 'nothing'){
+                    this.items[vaccin.id].my = personal.vaccins[vaccin.key];
+                }else if(vaccin.my.status == 'nothing'){
                     let personal = this.$store.state.personal;
-                    personal.status[vaccin.key] = 'reservation';
+                    personal.vaccins[vaccin.key] = vaccin.my;
+                    personal.vaccins[vaccin.key].status = 'reservation';
                     this.$store.commit('setPersonal', personal);
 
                     console.log(this.items[vaccin.id])
-                    this.items[vaccin.id].status = personal.status[vaccin.key];
+                    this.items[vaccin.id].my = personal.vaccins[vaccin.key];
                 }
             },
             selectVaccin(item){
@@ -85,13 +87,17 @@
                     }
                     let interval = `${vac.interval.num} ${vac.interval.unit}`;
                     vac.days = interval;
-                    vac.state = `0 / ${vac.needed} 回`;
+                    vac.state = `${vac.needed} 回`;
                     vac.required = (vac.required)? '定期': '任意';
                     console.log(this.$store.state.personal)
-                    if(k in this.$store.state.personal.status){
-                        vac.status = this.$store.state.personal.status[k];
+                    if(k in this.$store.state.personal.vaccins){
+                        vac.my = this.$store.state.personal.vaccins[k];
                     }else{
-                        vac.status = 'nothing'
+                        vac.my = {
+                            'status': 'nothing',
+                            'completed_num': 0, 'required': vac.state,
+                            'reservation_date': ''
+                        } 
                     }
                     vac.key = k;
                     vac.id = this.items.length;
@@ -109,14 +115,17 @@
                 }
                 return color;
             },
-            btnWord(status){
+            btnWord(vaccination){
+                console.log(vaccination.status);
                 let word = '未定義';
-                if(status == 'nothing'){
-                    word = '未定';
-                }else if(status == 'reservation'){
-                    word = '予約済み(○月×日)';
-                }else if(status == 'complete'){
-                    word = '完了'
+                if(vaccination.status == 'nothing'){
+                    word = '未';
+                }else if(vaccination.status == 'reservation'){
+                    let date = vaccination.reservation_date.replace('-', '年');
+                    date = date.replace('-', '月');
+                    word = `予\r\n${date}日`;
+                }else if(vaccination.status == 'complete'){
+                    word = '完'
                 }
                 return word;
             }

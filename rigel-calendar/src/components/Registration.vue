@@ -90,7 +90,13 @@
                 this.$store.commit('setPersonal', {
                     'nickname': this.nickname,
                     'birth_day': this.birth_day,
-                    'status': {'dummy': 'complete'}
+                    'vaccins': {
+                        'dummy': {
+                        'status': 'complete',
+                        'completed_num': 0, 'required': 3,
+                        'reservation_date': '2020-11-14'
+                        } 
+                    }
                 });
                 this.$router.push('/home');
             }
