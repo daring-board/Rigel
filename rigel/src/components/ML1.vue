@@ -49,7 +49,6 @@
 
 <script>
 import * as tf from '@tensorflow/tfjs'
-import * as mobilenet from '@tensorflow-models/mobilenet'
 import * as knn from '@tensorflow-models/knn-classifier'
 import firebase from 'firebase/app'
 import 'firebase/storage'
@@ -121,8 +120,17 @@ export default {
     },
     addExample: async function(classId){
       const img = await this.webcam.capture()
-      const activation = this.net.infer(img, 'conv_preds')
-      this.classifier.addExample(activation, classId)
+      const y = tf.tensor1d(tf.tidy(() => {
+        console.log(img)
+        const x = tf.image
+                  .resizeBilinear(img, [192, 192])
+                  .toFloat()
+                  .div(tf.scalar(255))
+                  .expandDims()
+        return this.net.predict(x).dataSync()
+      }))
+      this.classifier.addExample(y, classId)
+      y.dispose()
       img.dispose()
     },
     start_process: function(){
@@ -134,27 +142,36 @@ export default {
       this.is_loading = true
 
       console.log('Loading mobilenet..')
-      this.net = await mobilenet.load({
-        version: 2, alpha: 1.0
-      })
+      this.net = await tf.loadGraphModel(
+        "https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v2_035_192/feature_vector/2/default/1",
+        { fromTFHub: true }
+      )
       console.log('Successfully loaded model')
+      console.log(this.net)
 
       console.log('Create Classifier')
       this.classifier = knn.create()
       console.log('Successfully created classifier')
       this.is_loading = false
 
-      this.width = 224
-      this.height = 224
       const webcamEl = document.getElementById('webcam')
       this.webcam = await tf.data.webcam(webcamEl)
 
       while (true) {
         if (this.classifier.getNumClasses() > 0) {
           const img = await this.webcam.capture()
-          const activation = this.net.infer(img, 'conv_preds')
-          // console.log(activation)
-          const result = await this.classifier.predictClass(activation);
+          const y = tf.tensor1d(tf.tidy(() => {
+            console.log(img)
+            const x = tf.image
+                      .resizeBilinear(img, [192, 192])
+                      .toFloat()
+                      .div(tf.scalar(255))
+                      .expandDims()
+            return this.net.predict(x).dataSync()
+          }))
+          const result = await this.classifier.predictClass(y)
+          y.dispose()
+          img.dispose()
           var pre = ''
           var post = ''
           if(result.confidences[result.label] > 0.9){
@@ -168,7 +185,7 @@ export default {
             continue
           }
           this.message = `${pre}${this.class_list[result.label].class_name}が見えている${post}\n`
-          img.dispose();
+          result.dispose
         }
         await tf.nextFrame();
       }

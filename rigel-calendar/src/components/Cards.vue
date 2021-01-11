@@ -121,9 +121,12 @@
                 if(vaccination.status == 'nothing'){
                     word = '未';
                 }else if(vaccination.status == 'reservation'){
+                    let obj = new Date(vaccination.reservation_date);
+                    var dayOfWeek = '日月火水木金土'[obj.getDay()];
+                    console.log(dayOfWeek)
                     let date = vaccination.reservation_date.replace('-', '年');
                     date = date.replace('-', '月');
-                    word = `予\r\n${date}日`;
+                    word = `予\r\n${date}日(${dayOfWeek})`;
                 }else if(vaccination.status == 'complete'){
                     word = '完'
                 }
