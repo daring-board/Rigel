@@ -134,6 +134,8 @@ export default {
     },
     start_process: function(){
       this.is_try = true
+      this.width = 224
+      this.height = 224
       this.processing()
     },
     processing: async function(){
