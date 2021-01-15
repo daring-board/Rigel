@@ -1,0 +1,13 @@
+{
+  "name": "rigel_func",
+  "version": "0.0.1",
+  "dependencies": {
+    "@google-cloud/storage": "^5.7.2"
+  },
+  "devDependencies": {
+    "@google-cloud/functions-framework": "^1.7.1"
+  },
+  "scripts": {
+    "start": "npx functions-framework --port=8888 --target=uploadKNN"
+  }
+}

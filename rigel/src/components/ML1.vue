@@ -82,30 +82,29 @@ export default {
     saveKNN: async function() {
       /* eslint-disable */
       let dataset = this.classifier.getClassifierDataset()
+      console.log(dataset)
       var datasetObj = {}
       Object.keys(dataset).forEach((key) => {
         let data = dataset[key].dataSync()
         datasetObj[key] = Array.from(data)
       });
       let jsonStr = JSON.stringify(datasetObj)
+      console.log(jsonStr)
       localStorage.setItem("knn_classifier", jsonStr)
-      this.storageRef.putString(jsonStr).then(function(snapshot) {
-        console.log('Uploaded a raw string!')
-      })
+      let url = 'https://us-central1-rigel-b11c1.cloudfunctions.net/upload-knn'
+      axios.post(url, {'JsonString': jsonStr}, {headers: {'Access-Control-Allow-Origin': '*'}})
+        .then(response => {})
     },
     loadKNN: function(){
       /* eslint-disable */
       let dataset = localStorage.getItem("knn_classifier")
-      let url = 'https://us-central1-rigel-b11c1.cloudfunctions.net/getData'
+      let url = 'https://us-central1-rigel-b11c1.cloudfunctions.net/get-knn'
       axios.get(url, {headers: {'Access-Control-Allow-Origin': '*'}})
         .then(response => {
-          console.log(response.data) // mockData
-          console.log(response.status) // 200
-          var obj = response.data
+          var obj = JSON.parse(response.data)
           this.classifier = knn.create()
           Object.keys(obj).forEach((key) => {
             if (!Array.isArray(obj[key])) return
-            console.log(obj[key])
             obj[key] = tf.tensor(obj[key], [obj[key].length / 1280, 1280])
           }, obj)
           this.classifier.setClassifierDataset(obj)
@@ -161,7 +160,6 @@ export default {
         if (this.classifier.getNumClasses() > 0) {
           const img = await this.webcam.capture()
           const y = tf.tensor1d(tf.tidy(() => {
-            console.log(img)
             const x = tf.image
                       .resizeBilinear(img, [192, 192])
                       .toFloat()
