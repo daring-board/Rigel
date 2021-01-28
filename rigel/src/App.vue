@@ -15,6 +15,8 @@
             </b-card-body>
           </b-card>
         </b-col>
+      </b-row>
+      <b-row style="margin-top: 10px">
         <b-col>
           <b-card>
             <b-card-header>

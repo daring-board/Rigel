@@ -1,6 +1,6 @@
 <template>
   <div class="ml1">
-    <video autoplay playsinline muted id="webcam" :width="width" :height="height"></video>
+    <video autoplay playsinline muted id="webcam" style="margin-top: 10px" :width="width" :height="height"></video>
     <div v-if="!is_try">
       <b-button class="ai-btn" @click="start_process">賢くなるAIを試す</b-button>
     </div>
@@ -89,15 +89,12 @@ export default {
         datasetObj[key] = Array.from(data)
       });
       let jsonStr = JSON.stringify(datasetObj)
-      console.log(jsonStr)
-      localStorage.setItem("knn_classifier", jsonStr)
       let url = 'https://us-central1-rigel-b11c1.cloudfunctions.net/upload-knn'
       axios.post(url, {'JsonString': jsonStr}, {headers: {'Access-Control-Allow-Origin': '*'}})
         .then(response => {})
     },
     loadKNN: function(){
       /* eslint-disable */
-      let dataset = localStorage.getItem("knn_classifier")
       let url = 'https://us-central1-rigel-b11c1.cloudfunctions.net/get-knn'
       axios.get(url, {headers: {'Access-Control-Allow-Origin': '*'}})
         .then(response => {
