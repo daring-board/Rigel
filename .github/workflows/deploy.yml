@@ -24,9 +24,8 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Install Dependencies
-      run: npm install
-    - name: Build
-      run: npm run build
-    - name: Deply to Firebase
-      run: firebase deploy --token ${{ secrets.FIREBASE_TOKEN }}
+    - name: Install Build Deploy
+      run: | 
+            npm install
+            npm run build
+            firebase deploy --token ${{ secrets.FIREBASE_TOKEN }}
