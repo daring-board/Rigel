@@ -28,6 +28,19 @@
           </b-card>
         </b-col>
       </b-row>
+      <b-row style="margin-top: 10px">
+        <b-col>
+          <b-card>
+            <b-card-header>
+              数独（NumberPlace）
+            </b-card-header>
+            <b-card-body>
+              <NumberPlace/>
+            </b-card-body>
+          </b-card>
+        </b-col>
+      </b-row>
+
     </b-container>
   </div>
 </template>
@@ -35,12 +48,14 @@
 <script>
 import Roulet from './components/Roulet.vue'
 import ML1 from './components/ML1.vue'
+import NumberPlace from './components/NumberPlace.vue'
 
 export default {
   name: 'app',
   components: {
     Roulet,
     ML1,
+    NumberPlace,
   }
 }
 </script>

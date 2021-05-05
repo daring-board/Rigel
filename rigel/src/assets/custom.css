@@ -22,12 +22,12 @@ body {
 	color: #1d2731;
 }
 
-.roulet .btn, .ml1 .btn {
+.roulet .btn, .ml1 .btn, .number-place .btn {
 	border-radius: 0;
 	border-color: transparent;
 }
 
-.roulet-btn, .ai-btn {
+.roulet-btn, .ai-btn, .np-btn {
 	position: relative;
 	transition:800ms ease all;
 	outline:none;
@@ -37,13 +37,14 @@ body {
 	height: 50px;
 }
 
-.roulet-btn:hover, .ai-btn:hover {
+.roulet-btn:hover, .ai-btn:hover, .np-btn:hover {
 	background-color: #f4f4f4;
 	color: #d9b310;
 }
 
 .roulet-btn:before, .roulet-btn:after
-, .ai-btn:before, .ai-btn:after {
+, .ai-btn:before, .ai-btn:after
+, .np-btn:before, .np-btn:after {
 	content:'';
 	position:absolute;
 	height:2px;
@@ -52,21 +53,22 @@ body {
 	transition:400ms ease all;
 }
 
-.roulet-btn:before, .ai-btn:before {
+.roulet-btn:before, .ai-btn:before, .np-btn:before {
 	top:0;
 	right:0;
 }
-.roulet-btn:after, .ai-btn:after {
+.roulet-btn:after, .ai-btn:after, .np-btn:after {
 	left:0;
 	bottom:0;
 }
 
-.roulet-btn:hover:before,.roulet-btn:hover:after
-,.ai-btn:hover:before, .ai-btn:hover:after {
+.roulet-btn:hover:before, .roulet-btn:hover:after
+, .ai-btn:hover:before, .ai-btn:hover:after 
+, .np-btn:hover:before, .np-btn:hover:after {
 	width:100%;
 	transition:800ms ease all;
 }
 
-.roulet-btn:focus, .ai-btn:focus {
+.roulet-btn:focus, .ai-btn:focus, .np-btn:focus {
 	box-shadow: none;
 }
