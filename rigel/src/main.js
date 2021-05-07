@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import Vuex from 'vuex';
 import App from './App.vue'
 import BootstrapVue from 'bootstrap-vue'
 import firebase from 'firebase/app'
@@ -6,8 +7,10 @@ import firebase from 'firebase/app'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import './assets/custom.css'
+import store from './store'
 
 Vue.use(BootstrapVue)
+Vue.use(Vuex);
 
 Vue.config.productionTip = false
 
@@ -25,4 +28,5 @@ firebase.initializeApp(config);
 
 new Vue({
   render: h => h(App),
+  store,
 }).$mount('#app')

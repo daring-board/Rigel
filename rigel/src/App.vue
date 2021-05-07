@@ -40,7 +40,18 @@
           </b-card>
         </b-col>
       </b-row>
-
+      <!-- <b-row style="margin-top: 10px">
+        <b-col>
+          <b-card>
+            <b-card-header>
+              カメラ
+            </b-card-header>
+            <b-card-body>
+              <Camera/>
+            </b-card-body>
+          </b-card>
+        </b-col>
+      </b-row> -->
     </b-container>
   </div>
 </template>
@@ -49,6 +60,7 @@
 import Roulet from './components/Roulet.vue'
 import ML1 from './components/ML1.vue'
 import NumberPlace from './components/NumberPlace.vue'
+// import Camera from './components/Camera.vue'
 
 export default {
   name: 'app',
@@ -56,6 +68,7 @@ export default {
     Roulet,
     ML1,
     NumberPlace,
+    // Camera,
   }
 }
 </script>

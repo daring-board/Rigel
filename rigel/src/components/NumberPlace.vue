@@ -92,7 +92,7 @@ export default {
         row.forEach(el => {
           let obj = {
               'num': el,
-              'candidates': this.options,
+              'candidates': [1, 2, 3, 4, 5, 6, 7, 8, 9],
               'status': 'free'
           }
           if (el != 0){
@@ -230,7 +230,7 @@ export default {
       let counter = 0
       let num = 1
 
-      while(counter < this.end_of_loop){
+      while(counter < 30){
         this.checkLines(num)
         counter++
 
@@ -241,39 +241,93 @@ export default {
         }
         // next Number
         num++
-        if(num == this.size+1) num = 1
+        if(num == this.size+1){
+          this.checkCandidates()
+          num = 1
+        }
       }
     },
     checkLines(num){
-      let exclude_row_lines = []
-      let exclude_col_lines = []
-
-      for(let i=0;i<this.size;i++){
-        for(let j=0;j<this.size;j++){
-          if(this.items[i][j]['num'] == num){
-            exclude_row_lines.push(i)
-            exclude_col_lines.push(j)
+      for(let blk_idx=0;blk_idx<this.size;blk_idx++){
+        let candidates = []
+        let base_pos_x = blk_idx % 3 * 3
+        let base_pos_y = Math.floor(blk_idx / 3) * 3
+        let exclude_block_flag = false
+        for(let i=base_pos_x;i<base_pos_x+3;i++){
+          for(let j=base_pos_y;j<base_pos_y+3;j++){
+            if(this.items[i][j]['num'] == num){
+              exclude_block_flag = true
+              break
+            }
           }
         }
-      }
+        if(exclude_block_flag){
+          for(let i=base_pos_x;i<base_pos_x+3;i++){
+            for(let j=base_pos_y;j<base_pos_y+3;j++){
+              this.items[i][j]['candidates'] = this.items[i][j]['candidates'].filter(c => c != num)
+            }
+          }
+          continue
+        }
+        let exclude_row_lines = []
+        let exclude_col_lines = []
 
-      let candidates = []
-      for(let blk_idx=0;blk_idx<this.size;blk_idx++){
-        let base_pos = blk_idx*3
+        for(let i=0;i<this.size;i++){
+          for(let j=0;j<this.size;j++){
+            if(this.items[i][j]['num'] == num){
+              exclude_row_lines.push(i)
+              exclude_col_lines.push(j)
+            }
+          }
+        }
+
+        exclude_row_lines.forEach(i => {
+          for(let j=0;j<this.size;j++){
+            this.items[i][j]['candidates'] = this.items[i][j]['candidates'].filter(c => c != num)
+          }
+        })
+
+        exclude_col_lines.forEach(j => {
+          for(let i=0;i<this.size;i++){
+            this.items[i][j]['candidates'] = this.items[i][j]['candidates'].filter(c => c != num)
+          }
+        })
+
         let blk_pos = [
-          [base_pos, base_pos], [base_pos, base_pos+1], [base_pos, base_pos+2],
-          [base_pos+1, base_pos], [base_pos+1, base_pos+1], [base_pos+1, base_pos+2],
-          [base_pos+2, base_pos], [base_pos+2, base_pos+1], [base_pos+2, base_pos+2],
+          [base_pos_x, base_pos_y], [base_pos_x, base_pos_y+1], [base_pos_x, base_pos_y+2],
+          [base_pos_x+1, base_pos_y], [base_pos_x+1, base_pos_y+1], [base_pos_x+1, base_pos_y+2],
+          [base_pos_x+2, base_pos_y], [base_pos_x+2, base_pos_y+1], [base_pos_x+2, base_pos_y+2],
         ]
         blk_pos.forEach(p => {
+          if(this.items[p[0]][p[1]]['status'] == 'fixed'){
+            return
+          }
           if(!exclude_row_lines.includes(p[0]) && !exclude_col_lines.includes(p[1])){
             candidates.push(p)
+            this.items[p[0]][p[1]]['candidates'].push(num)
+            this.items[p[0]][p[1]]['candidates'] = this.items[p[0]][p[1]]['candidates'].filter(
+              (elem, index, self) => self.indexOf(elem) === index
+            )
           }
         })
         if(candidates.length == 1){
           this.setFixNumber(candidates[0], num)
           /* eslint-disable */
           console.log(candidates[0], num)
+        }
+      }
+    },
+    checkCandidates(){
+      for(let i=0;i<this.size;i++){
+        for(let j=0;j<this.size;j++){
+          if(this.items[i][j]['status'] == 'fixed') continue
+          console.log('checkCandidates')
+          console.log([i, j], this.items[i][j]['candidates'])
+          if(this.items[i][j]['candidates'].length == 1){
+            this.setFixNumber([i, j], this.items[i][j]['candidates'][0])
+            /* eslint-disable */
+            console.log([i, j], this.items[i][j]['candidates'][0])
+          }
         }
       }
     }
